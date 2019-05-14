@@ -67,7 +67,7 @@ public class SimpleExampleObjectTest {
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.CHANGE));
         assertThat(changes.get(0).getNewValue(), equalTo("Toasty"));
         assertThat(changes.get(0).getOldValue(), equalTo("Cheese"));
-        assertThat(changes.get(0).getDescriptiveName(), equalTo("First Name"));
+        assertThat(changes.get(0).getDescriptiveName(), equalTo("First name"));
         assertThat(changes.get(0).isDescriptive(), equalTo(true));
 
 
