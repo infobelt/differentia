@@ -65,6 +65,7 @@ public class SimpleExampleObjectTest {
         List<AuditChange> changes = AUDIT_BUILDER.buildChanges(obj1, obj2);
         assertThat(changes.size(), equalTo(1));
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.CHANGE));
+        assertThat(changes.get(0).getProperty(), equalTo("name"));
         assertThat(changes.get(0).getNewValue(), equalTo("Toasty"));
         assertThat(changes.get(0).getOldValue(), equalTo("Cheese"));
         assertThat(changes.get(0).getDescriptiveName(), equalTo("First name"));

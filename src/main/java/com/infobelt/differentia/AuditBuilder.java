@@ -54,35 +54,43 @@ public class AuditBuilder {
             event = AuditEventType.REMOVE;
         }
 
-        for (Field field : referenceObject.getClass().getDeclaredFields()) {
-            AuditMetadata[] metadataAnnotation = field.getAnnotationsByType(AuditMetadata.class);
-            if (metadataAnnotation.length > 0) {
-                // Found a property
-                AuditChange auditChange = new AuditChange();
-                auditChange.setEventType(event);
-                auditChange.setProperty(field.getName());
-                auditChange.setDescriptiveName(metadataAnnotation[0].name());
-                switch (event) {
-                    case ADD:
-                        auditChange.setNewValue(getBeanValue(newInstance, field.getName()));
-                        changes.add(auditChange);
-                        break;
-                    case CHANGE:
-                        String oldValue = getBeanValue(oldInstance, field.getName());
-                        String newValue = getBeanValue(newInstance, field.getName());
-                        if (!Objects.equals(newValue, oldValue)) {
-                            auditChange.setNewValue(newValue);
-                            auditChange.setOldValue(oldValue);
-                            changes.add(auditChange);
+        AuditMetadata classAnnotation = referenceObject.getClass().getAnnotation(AuditMetadata.class);
 
-                        }
-                        break;
-                    case REMOVE:
-                        auditChange.setOldValue(getBeanValue(oldInstance, field.getName()));
-                        changes.add(auditChange);
-                        break;
+        if (classAnnotation != null) {
+
+            for (Field field : referenceObject.getClass().getDeclaredFields()) {
+                AuditMetadata[] metadataAnnotation = field.getAnnotationsByType(AuditMetadata.class);
+                if (metadataAnnotation.length > 0) {
+                    // Found a property
+                    AuditChange auditChange = new AuditChange();
+                    auditChange.setEventType(event);
+                    auditChange.setProperty(field.getName());
+                    auditChange.setDescriptiveName(metadataAnnotation[0].name());
+                    auditChange.setDescriptive(classAnnotation.descriptiveProperty().equals(field.getName()));
+                    switch (event) {
+                        case ADD:
+                            auditChange.setNewValue(getBeanValue(newInstance, field.getName()));
+                            changes.add(auditChange);
+                            break;
+                        case CHANGE:
+                            String oldValue = getBeanValue(oldInstance, field.getName());
+                            String newValue = getBeanValue(newInstance, field.getName());
+                            if (!Objects.equals(newValue, oldValue)) {
+                                auditChange.setNewValue(newValue);
+                                auditChange.setOldValue(oldValue);
+                                changes.add(auditChange);
+
+                            }
+                            break;
+                        case REMOVE:
+                            auditChange.setOldValue(getBeanValue(oldInstance, field.getName()));
+                            changes.add(auditChange);
+                            break;
+                    }
                 }
             }
+        } else {
+            log.warn("You are sure you wanted to audit this object " + referenceObject.getClass() + ", if you do you need to add the @AuditMetadata annotation to the object");
         }
 
         return changes;
