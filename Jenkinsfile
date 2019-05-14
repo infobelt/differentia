@@ -49,13 +49,13 @@ pipeline {
                         env.VERSION = readFile "${env.WORKSPACE}/VERSION"
                     }
 
-                    slackSend(color: 'good', message: "Differentia :: Building ${env.VERSION} (${env.BUILD_URL})")
+                    slackSend(color: 'good', message: "Differentia :: Building ${env.VERSION}")
 
                     sh "mvn versions:set -DnewVersion=\$(cat VERSION)"
                     sh "jx step tag --version \$(cat VERSION)"
                     sh "mvn clean deploy"
 
-                    slackSend(color: 'good', message: "Differentia :: Deployed ${env.VERSION} (${env.BUILD_URL})")
+                    slackSend(color: 'good', message: "Differentia :: Deployed ${env.VERSION}")
 
                 }
             }
@@ -67,7 +67,7 @@ pipeline {
             cleanWs()
         }
         success {
-            slackSend(color: 'good', message: "Differentia :: Build Success (${env.BUILD_URL})")
+            slackSend(color: 'good', message: "Differentia :: Build Success")
         }
         failure {
             slackSend(color: 'danger', message: "Differentia :: Build Failed (${env.BUILD_URL})")
