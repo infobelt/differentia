@@ -6,7 +6,7 @@
 
     <groupId>com.infobelt</groupId>
     <artifactId>differentia</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.6</version>
     <name>Differentia</name>
     <description>A little utility to help with generating audit logs for changes in objects</description>
 
