@@ -24,4 +24,13 @@ public @interface AuditMetadata {
      * @return the name of the property which best identifies the class
      */
     String descriptiveProperty() default "";
+
+    /**
+     * If a property is annotated with traverse as true then when you
+     * build the changes we will go into this property and see if we can build changes for
+     * either this object in it - or if it is a list the objects in the list
+     *
+     * @return true if you want to traverse into this property
+     */
+    boolean traverse() default false;
 }

@@ -62,29 +62,45 @@ public class AuditBuilder {
             for (Field field : referenceObject.getClass().getDeclaredFields()) {
                 AuditMetadata[] metadataAnnotation = field.getAnnotationsByType(AuditMetadata.class);
                 if (metadataAnnotation.length > 0) {
+
+                    AuditMetadata propertyAnnotation = metadataAnnotation[0];
+
                     // Found a property
                     AuditChange auditChange = new AuditChange();
                     auditChange.setEventType(event);
                     auditChange.setProperty(field.getName());
-                    auditChange.setDescriptiveName(metadataAnnotation[0].name());
+                    auditChange.setDescriptiveName(propertyAnnotation.name());
                     auditChange.setDescriptive(classAnnotation.descriptiveProperty().equals(field.getName()));
                     switch (event) {
                         case ADD:
-                            auditChange.setNewValue(getBeanValue(newInstance, field.getName(), metadataAnnotation[0]));
-                            changes.add(auditChange);
-                            break;
-                        case CHANGE:
-                            String oldValue = getBeanValue(oldInstance, field.getName(), metadataAnnotation[0]);
-                            String newValue = getBeanValue(newInstance, field.getName(), metadataAnnotation[0]);
-                            if (!Objects.equals(newValue, oldValue)) {
-                                auditChange.setNewValue(newValue);
-                                auditChange.setOldValue(oldValue);
+                            if (propertyAnnotation.traverse()) {
+
+                            } else {
+                                auditChange.setNewValue(getBeanValue(newInstance, field.getName(), metadataAnnotation[0]));
                                 changes.add(auditChange);
                             }
                             break;
+                        case CHANGE:
+
+                            if (propertyAnnotation.traverse()) {
+
+                            } else {
+                                String oldValue = getBeanValue(oldInstance, field.getName(), propertyAnnotation);
+                                String newValue = getBeanValue(newInstance, field.getName(), propertyAnnotation);
+                                if (!Objects.equals(newValue, oldValue)) {
+                                    auditChange.setNewValue(newValue);
+                                    auditChange.setOldValue(oldValue);
+                                    changes.add(auditChange);
+                                }
+                            }
+                            break;
                         case REMOVE:
-                            auditChange.setOldValue(getBeanValue(oldInstance, field.getName(), metadataAnnotation[0]));
-                            changes.add(auditChange);
+                            if (propertyAnnotation.traverse()) {
+
+                            } else {
+                                auditChange.setOldValue(getBeanValue(oldInstance, field.getName(), propertyAnnotation));
+                                changes.add(auditChange);
+                            }
                             break;
                     }
                 }
