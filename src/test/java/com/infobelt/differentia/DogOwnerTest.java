@@ -13,6 +13,7 @@ public class DogOwnerTest {
 
     @Test
     public void basicRelationshipTest() {
+
         Dog dog = new Dog();
         dog.setName("Fluffy");
 
