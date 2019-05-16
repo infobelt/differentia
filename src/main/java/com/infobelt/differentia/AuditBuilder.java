@@ -2,6 +2,7 @@ package com.infobelt.differentia;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
@@ -69,21 +70,20 @@ public class AuditBuilder {
                     auditChange.setDescriptive(classAnnotation.descriptiveProperty().equals(field.getName()));
                     switch (event) {
                         case ADD:
-                            auditChange.setNewValue(getBeanValue(newInstance, field.getName()));
+                            auditChange.setNewValue(getBeanValue(newInstance, field.getName(), metadataAnnotation[0]));
                             changes.add(auditChange);
                             break;
                         case CHANGE:
-                            String oldValue = getBeanValue(oldInstance, field.getName());
-                            String newValue = getBeanValue(newInstance, field.getName());
+                            String oldValue = getBeanValue(oldInstance, field.getName(), metadataAnnotation[0]);
+                            String newValue = getBeanValue(newInstance, field.getName(), metadataAnnotation[0]);
                             if (!Objects.equals(newValue, oldValue)) {
                                 auditChange.setNewValue(newValue);
                                 auditChange.setOldValue(oldValue);
                                 changes.add(auditChange);
-
                             }
                             break;
                         case REMOVE:
-                            auditChange.setOldValue(getBeanValue(oldInstance, field.getName()));
+                            auditChange.setOldValue(getBeanValue(oldInstance, field.getName(), metadataAnnotation[0]));
                             changes.add(auditChange);
                             break;
                     }
@@ -97,9 +97,13 @@ public class AuditBuilder {
     }
 
     // The aim of this is to help with the stringification of things
-    private String getBeanValue(Object instance, String name) {
+    private String getBeanValue(Object instance, String name, AuditMetadata auditMetadata) {
         try {
-            return BeanUtils.getProperty(instance, name);
+            if ("".equals(auditMetadata.descriptiveProperty())) {
+                return String.valueOf(PropertyUtils.getProperty(instance, name));
+            } else {
+                return String.valueOf(PropertyUtils.getProperty(PropertyUtils.getProperty(instance, name), auditMetadata.descriptiveProperty()));
+            }
         } catch (Exception e) {
             log.warn("Unable to get property " + name);
             throw new RuntimeException("Unable to get the audit value for property " + name, e);
