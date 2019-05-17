@@ -7,8 +7,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * A change builder can look at two objects of the same
@@ -74,16 +76,15 @@ public class AuditBuilder {
                     switch (event) {
                         case ADD:
                             if (propertyAnnotation.traverse()) {
-
+                                changes.addAll(traverse(event, propertyAnnotation, field, newInstance, oldInstance));
                             } else {
-                                auditChange.setNewValue(getBeanValue(newInstance, field.getName(), metadataAnnotation[0]));
+                                auditChange.setNewValue(getBeanValue(newInstance, field.getName(), propertyAnnotation));
                                 changes.add(auditChange);
                             }
                             break;
                         case CHANGE:
-
                             if (propertyAnnotation.traverse()) {
-
+                                changes.addAll(traverse(event, propertyAnnotation, field, newInstance, oldInstance));
                             } else {
                                 String oldValue = getBeanValue(oldInstance, field.getName(), propertyAnnotation);
                                 String newValue = getBeanValue(newInstance, field.getName(), propertyAnnotation);
@@ -96,7 +97,7 @@ public class AuditBuilder {
                             break;
                         case REMOVE:
                             if (propertyAnnotation.traverse()) {
-
+                                changes.addAll(traverse(event, propertyAnnotation, field, newInstance, oldInstance));
                             } else {
                                 auditChange.setOldValue(getBeanValue(oldInstance, field.getName(), propertyAnnotation));
                                 changes.add(auditChange);
@@ -110,6 +111,48 @@ public class AuditBuilder {
         }
 
         return changes;
+    }
+
+    /**
+     * Traverse will dig into a property and determine to traverse it and build more changes
+     *
+     * @param event
+     * @param propertyAnnotation
+     * @param field
+     * @param newInstance
+     * @param oldInstance
+     * @return
+     */
+    private List<AuditChange> traverse(AuditEventType event, AuditMetadata propertyAnnotation, Field field, Object newInstance, Object oldInstance) {
+
+        try {
+            Object newValue = newInstance != null ? PropertyUtils.getProperty(newInstance, field.getName()) : null;
+            Object oldValue = oldInstance != null ? PropertyUtils.getProperty(newInstance, field.getName()) : null;
+
+            if (newValue instanceof Collection<?> || oldValue instanceof Collection<?>) {
+                List<AuditChange> changes = new ArrayList<>();
+                if (newValue == null) {
+                    ((Collection)oldValue).forEach(o -> changes.addAll(buildChanges(o,null)));
+                } else if (oldValue == null) {
+                    ((Collection)newValue).forEach(o -> changes.addAll(buildChanges(o,null)));
+                } else {
+                    // So we have a list - we will need to go through the list
+                    // and determine compare objects that match
+
+                    // Starting with old - find all the stuff that is in new
+
+                    
+                }
+
+                return changes;
+            } else {
+                return buildChanges(oldValue, newValue);
+            }
+        } catch (Exception e) {
+            log.warn("Unable to get property to traverse " + field.getName());
+            throw new RuntimeException("Unable to get the audit value for traversed property " + field.getName(), e);
+        }
+
     }
 
     // The aim of this is to help with the stringification of things
@@ -147,8 +190,6 @@ public class AuditBuilder {
         } else {
             sb.append(instance.getClass().getSimpleName());
         }
-
-
         return sb.toString();
     }
 
