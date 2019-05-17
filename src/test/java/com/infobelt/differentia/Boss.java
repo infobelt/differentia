@@ -5,7 +5,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
-@AuditMetadata
+@AuditMetadata(name = "Bossing", descriptiveProperty = "name")
 @Data
 public class Boss {
 

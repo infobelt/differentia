@@ -12,6 +12,7 @@ public interface MessageBuilder {
 
     String buildNewMessage(AuditBuilder builder, Object newInstance);
 
-    String buildChangeMessage(AuditBuilder builder, Object newInstance, Object oldInstance, List<AuditChange> changes);
+    String buildChangesMessage(AuditBuilder builder, Object newInstance, Object oldInstance, List<AuditChange> changes);
 
+    String buildChangeMessage(AuditBuilder builder, ObjectMetadata om, AuditChange auditChange);
 }

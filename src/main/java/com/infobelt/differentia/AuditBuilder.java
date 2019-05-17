@@ -1,5 +1,7 @@
 package com.infobelt.differentia;
 
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -17,6 +19,8 @@ import java.util.Objects;
  * meaningful message to describe the change
  */
 @Slf4j
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuditBuilder {
 
     private MessageBuilder messageBuilder = new DefaultMessageBuilder();
@@ -39,7 +43,7 @@ public class AuditBuilder {
 
     public String changeMessage(Object oldInstance, Object newInstance) {
         List<AuditChange> changes = buildChanges(oldInstance, newInstance);
-        return messageBuilder.buildChangeMessage(this, newInstance, oldInstance, changes);
+        return messageBuilder.buildChangesMessage(this, newInstance, oldInstance, changes);
     }
 
     public List<AuditChange> buildChanges(Object oldInstance, Object newInstance) {
@@ -70,14 +74,17 @@ public class AuditBuilder {
                     ObjectMetadata om = new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
 
                     // Found a property
-                    AuditChange auditChange = createAuditChange(event, om);
+                    AuditChange auditChange = createAuditChange(event, om, referenceObject);
                     switch (event) {
                         case ADD:
                             if (propertyAnnotation.traverse()) {
                                 changes.addAll(traverse(event, propertyAnnotation, classAnnotation, field, newInstance, oldInstance));
                             } else {
                                 auditChange.setNewValue(getBeanValue(newInstance, field.getName(), propertyAnnotation));
-                                changes.add(auditChange);
+                                auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
+
+                                if (auditChange.getNewValue() != null)
+                                    changes.add(auditChange);
                             }
                             break;
                         case CHANGE:
@@ -89,6 +96,7 @@ public class AuditBuilder {
                                 if (!Objects.equals(newValue, oldValue)) {
                                     auditChange.setNewValue(newValue);
                                     auditChange.setOldValue(oldValue);
+                                    auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
                                     changes.add(auditChange);
                                 }
                             }
@@ -98,7 +106,9 @@ public class AuditBuilder {
                                 changes.addAll(traverse(event, propertyAnnotation, classAnnotation, field, newInstance, oldInstance));
                             } else {
                                 auditChange.setOldValue(getBeanValue(oldInstance, field.getName(), propertyAnnotation));
-                                changes.add(auditChange);
+                                auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
+                                if (auditChange.getOldValue() != null)
+                                    changes.add(auditChange);
                             }
                             break;
                     }
@@ -111,9 +121,10 @@ public class AuditBuilder {
         return changes;
     }
 
-    private AuditChange createAuditChange(AuditEventType event, ObjectMetadata om) {
+    private AuditChange createAuditChange(AuditEventType event, ObjectMetadata om, Object object) {
         AuditChange auditChange = new AuditChange();
         auditChange.setEntity(om.getEntityName());
+        auditChange.setEntityDescriptiveName(om.getEntityDescriptiveName(object));
         auditChange.setEventType(om.getEvent(event));
         auditChange.setProperty(om.getFieldName());
         auditChange.setDescriptiveName(om.getPropertyDescriptiveName());
@@ -137,7 +148,7 @@ public class AuditBuilder {
         try {
             Object newValue = newInstance != null ? PropertyUtils.getProperty(newInstance, field.getName()) : null;
             Object oldValue = oldInstance != null ? PropertyUtils.getProperty(oldInstance, field.getName()) : null;
-            Object referenceObject = newValue != null ? newValue : oldValue;
+            Object referenceObject = newInstance != null ? newInstance : oldInstance;
             if (Collection.class.isAssignableFrom(field.getType())) {
                 List<AuditChange> changes = new ArrayList<>();
                 if (newValue == null) {
@@ -159,16 +170,20 @@ public class AuditBuilder {
                     // Removals
                     oldValues.stream().filter(o -> !newValues.contains(o)).forEach(o -> {
                         ObjectMetadata om = new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
-                        AuditChange auditChange = createAuditChange(AuditEventType.REMOVE, om);
+                        AuditChange auditChange = createAuditChange(AuditEventType.REMOVE, om, referenceObject);
+                        auditChange.setRelatedEntity(getName(o));
                         auditChange.setOldValue(getBeanValue(o, propertyAnnotation.descriptiveProperty(), propertyAnnotation));
+                        auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
                         changes.add(auditChange);
                     });
 
                     // Additions
                     newValues.stream().filter(o -> !oldValues.contains(o)).forEach(o -> {
                         ObjectMetadata om = new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
-                        AuditChange auditChange = createAuditChange(AuditEventType.ADD, om);
+                        AuditChange auditChange = createAuditChange(AuditEventType.ADD, om, referenceObject);
+                        auditChange.setRelatedEntity(getName(o));
                         auditChange.setNewValue(getBeanValue(o, propertyAnnotation.descriptiveProperty(), propertyAnnotation));
+                        auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
                         changes.add(auditChange);
                     });
                 }
@@ -187,13 +202,17 @@ public class AuditBuilder {
     // The aim of this is to help with the stringification of things
     private String getBeanValue(Object instance, String name, AuditMetadata auditMetadata) {
         try {
+            Object value = null;
             if ("".equals(auditMetadata.descriptiveProperty())) {
-                return String.valueOf(PropertyUtils.getProperty(instance, name));
+                value = PropertyUtils.getProperty(instance, name);
             } else if (auditMetadata.traverse()) {
-                return String.valueOf(PropertyUtils.getProperty(instance, auditMetadata.descriptiveProperty()));
-            }  {
-                return String.valueOf(PropertyUtils.getProperty(PropertyUtils.getProperty(instance, name), auditMetadata.descriptiveProperty()));
+                value = PropertyUtils.getProperty(instance, auditMetadata.descriptiveProperty());
+            } else {
+                value = PropertyUtils.getProperty(PropertyUtils.getProperty(instance, name), auditMetadata.descriptiveProperty());
             }
+
+            return value == null ? null : String.valueOf(value);
+
         } catch (Exception e) {
             log.warn("Unable to get property " + name);
             throw new RuntimeException("Unable to get the audit value for property " + name, e);

@@ -7,6 +7,10 @@ public class AuditChange {
 
     private String entity;
 
+    private String relatedEntity;
+
+    private String entityDescriptiveName;
+
     private boolean descriptive = false;
 
     private AuditEventType eventType;
@@ -18,5 +22,7 @@ public class AuditChange {
     private String oldValue;
 
     private String newValue;
+
+    private String message;
 
 }

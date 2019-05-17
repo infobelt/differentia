@@ -2,9 +2,12 @@ package com.infobelt.differentia;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.PropertyUtils;
 
 import java.lang.reflect.Field;
 
+@Slf4j
 @Data
 @AllArgsConstructor
 public class ObjectMetadata {
@@ -46,5 +49,31 @@ public class ObjectMetadata {
             default:
                 return event;
         }
+    }
+
+    public String getEntityDescriptiveName(Object entity) {
+        if (!"".equals(classAnnotation.descriptiveProperty())) {
+            try {
+                return String.valueOf(PropertyUtils.getProperty(entity, classAnnotation.descriptiveProperty()));
+            } catch (Exception e) {
+                log.warn("Unable to get descriptive property " + classAnnotation.descriptiveProperty() + " on object " + entity);
+                throw new RuntimeException("Unable to get descriptive property " + classAnnotation.descriptiveProperty() + " on object " + entity, e);
+            }
+        }
+
+        // Always worth seeing if we have an ID
+        if ("".equals(classAnnotation.descriptiveProperty())) {
+            Object id = null;
+            try {
+                id = PropertyUtils.getProperty(entity, "id");
+                if (id != null) {
+                    return String.valueOf(id);
+                }
+            } catch (Exception e) {
+                // Ignore and try something else
+            }
+        }
+
+        return entity.toString();
     }
 }
