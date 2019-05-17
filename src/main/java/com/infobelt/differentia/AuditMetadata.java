@@ -33,4 +33,24 @@ public @interface AuditMetadata {
      * @return true if you want to traverse into this property
      */
     boolean traverse() default false;
+
+    /**
+     * The event type to use for an add
+     *
+     * This is useful is you want to handle the traverse and have it register as association
+     * and disassociation
+     *
+     * @return The audit event type to use for an add
+     */
+    AuditEventType add() default AuditEventType.ADD;
+
+    /**
+     * The event type to use for an add
+     *
+     * This is useful is you want to handle the traverse and have it register as association
+     * and disassociation
+     *
+     * @return The audit event type to use for a remove
+     */
+    AuditEventType remove() default AuditEventType.REMOVE;
 }

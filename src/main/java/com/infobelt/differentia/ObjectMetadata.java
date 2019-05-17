@@ -36,4 +36,15 @@ public class ObjectMetadata {
             return classAnnotation.name();
         }
     }
+
+    public AuditEventType getEvent(AuditEventType event) {
+        switch (event) {
+            case ADD:
+                return propertyAnnotation.add();
+            case REMOVE:
+                return propertyAnnotation.remove();
+            default:
+                return event;
+        }
+    }
 }

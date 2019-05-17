@@ -114,7 +114,7 @@ public class AuditBuilder {
     private AuditChange createAuditChange(AuditEventType event, ObjectMetadata om) {
         AuditChange auditChange = new AuditChange();
         auditChange.setEntity(om.getEntityName());
-        auditChange.setEventType(event);
+        auditChange.setEventType(om.getEvent(event));
         auditChange.setProperty(om.getFieldName());
         auditChange.setDescriptiveName(om.getPropertyDescriptiveName());
         auditChange.setDescriptive(om.isDescriptiveField());
