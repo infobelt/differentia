@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * A change builder can look at two objects of the same
@@ -59,6 +58,7 @@ public class AuditBuilder {
 
         AuditMetadata classAnnotation = referenceObject.getClass().getAnnotation(AuditMetadata.class);
 
+
         if (classAnnotation != null) {
 
             for (Field field : referenceObject.getClass().getDeclaredFields()) {
@@ -67,16 +67,14 @@ public class AuditBuilder {
 
                     AuditMetadata propertyAnnotation = metadataAnnotation[0];
 
+                    ObjectMetadata om = new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
+
                     // Found a property
-                    AuditChange auditChange = new AuditChange();
-                    auditChange.setEventType(event);
-                    auditChange.setProperty(field.getName());
-                    auditChange.setDescriptiveName(propertyAnnotation.name());
-                    auditChange.setDescriptive(classAnnotation.descriptiveProperty().equals(field.getName()));
+                    AuditChange auditChange = createAuditChange(event, om);
                     switch (event) {
                         case ADD:
                             if (propertyAnnotation.traverse()) {
-                                changes.addAll(traverse(event, propertyAnnotation, field, newInstance, oldInstance));
+                                changes.addAll(traverse(event, propertyAnnotation, classAnnotation, field, newInstance, oldInstance));
                             } else {
                                 auditChange.setNewValue(getBeanValue(newInstance, field.getName(), propertyAnnotation));
                                 changes.add(auditChange);
@@ -84,7 +82,7 @@ public class AuditBuilder {
                             break;
                         case CHANGE:
                             if (propertyAnnotation.traverse()) {
-                                changes.addAll(traverse(event, propertyAnnotation, field, newInstance, oldInstance));
+                                changes.addAll(traverse(event, propertyAnnotation, classAnnotation, field, newInstance, oldInstance));
                             } else {
                                 String oldValue = getBeanValue(oldInstance, field.getName(), propertyAnnotation);
                                 String newValue = getBeanValue(newInstance, field.getName(), propertyAnnotation);
@@ -97,7 +95,7 @@ public class AuditBuilder {
                             break;
                         case REMOVE:
                             if (propertyAnnotation.traverse()) {
-                                changes.addAll(traverse(event, propertyAnnotation, field, newInstance, oldInstance));
+                                changes.addAll(traverse(event, propertyAnnotation, classAnnotation, field, newInstance, oldInstance));
                             } else {
                                 auditChange.setOldValue(getBeanValue(oldInstance, field.getName(), propertyAnnotation));
                                 changes.add(auditChange);
@@ -113,35 +111,66 @@ public class AuditBuilder {
         return changes;
     }
 
+    private AuditChange createAuditChange(AuditEventType event, ObjectMetadata om) {
+        AuditChange auditChange = new AuditChange();
+        auditChange.setEntity(om.getEntityName());
+        auditChange.setEventType(event);
+        auditChange.setProperty(om.getFieldName());
+        auditChange.setDescriptiveName(om.getPropertyDescriptiveName());
+        auditChange.setDescriptive(om.isDescriptiveField());
+        return auditChange;
+    }
+
     /**
      * Traverse will dig into a property and determine to traverse it and build more changes
      *
      * @param event
      * @param propertyAnnotation
+     * @param classAnnotation
      * @param field
      * @param newInstance
      * @param oldInstance
      * @return
      */
-    private List<AuditChange> traverse(AuditEventType event, AuditMetadata propertyAnnotation, Field field, Object newInstance, Object oldInstance) {
+    private List<AuditChange> traverse(AuditEventType event, AuditMetadata propertyAnnotation, AuditMetadata classAnnotation, Field field, Object newInstance, Object oldInstance) {
 
         try {
             Object newValue = newInstance != null ? PropertyUtils.getProperty(newInstance, field.getName()) : null;
-            Object oldValue = oldInstance != null ? PropertyUtils.getProperty(newInstance, field.getName()) : null;
-
-            if (newValue instanceof Collection<?> || oldValue instanceof Collection<?>) {
+            Object oldValue = oldInstance != null ? PropertyUtils.getProperty(oldInstance, field.getName()) : null;
+            Object referenceObject = newValue != null ? newValue : oldValue;
+            if (Collection.class.isAssignableFrom(field.getType())) {
                 List<AuditChange> changes = new ArrayList<>();
                 if (newValue == null) {
-                    ((Collection)oldValue).forEach(o -> changes.addAll(buildChanges(o,null)));
+                    ((Collection<?>) oldValue).forEach(o -> changes.addAll(buildChanges(o, null)));
                 } else if (oldValue == null) {
-                    ((Collection)newValue).forEach(o -> changes.addAll(buildChanges(o,null)));
+                    ((Collection<?>) newValue).forEach(o -> changes.addAll(buildChanges(o, null)));
                 } else {
-                    // So we have a list - we will need to go through the list
+                    // So we have a list, we will need to go through the list
                     // and determine compare objects that match
+                    List<Object> oldValues = new ArrayList<>((Collection<?>) oldValue);
+                    List<Object> newValues = new ArrayList<>((Collection<?>) newValue);
 
-                    // Starting with old - find all the stuff that is in new
+                    // Modifications
+                    oldValues.stream().filter(newValues::contains).forEach(o ->
+                            changes.addAll(buildChanges(o, newValues.get(newValues.indexOf(o)))));
 
-                    
+                    // TODO Shame we can't use Predicate.not - roll on Java11
+
+                    // Removals
+                    oldValues.stream().filter(o -> !newValues.contains(o)).forEach(o -> {
+                        ObjectMetadata om = new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
+                        AuditChange auditChange = createAuditChange(AuditEventType.REMOVE, om);
+                        auditChange.setOldValue(getBeanValue(o, propertyAnnotation.descriptiveProperty(), propertyAnnotation));
+                        changes.add(auditChange);
+                    });
+
+                    // Additions
+                    newValues.stream().filter(o -> !oldValues.contains(o)).forEach(o -> {
+                        ObjectMetadata om = new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
+                        AuditChange auditChange = createAuditChange(AuditEventType.ADD, om);
+                        auditChange.setNewValue(getBeanValue(o, propertyAnnotation.descriptiveProperty(), propertyAnnotation));
+                        changes.add(auditChange);
+                    });
                 }
 
                 return changes;
@@ -160,7 +189,9 @@ public class AuditBuilder {
         try {
             if ("".equals(auditMetadata.descriptiveProperty())) {
                 return String.valueOf(PropertyUtils.getProperty(instance, name));
-            } else {
+            } else if (auditMetadata.traverse()) {
+                return String.valueOf(PropertyUtils.getProperty(instance, auditMetadata.descriptiveProperty()));
+            }  {
                 return String.valueOf(PropertyUtils.getProperty(PropertyUtils.getProperty(instance, name), auditMetadata.descriptiveProperty()));
             }
         } catch (Exception e) {

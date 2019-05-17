@@ -12,7 +12,7 @@ public class Boss {
     @AuditMetadata
     private String name;
 
-    @AuditMetadata(traverse = true)
+    @AuditMetadata(traverse = true, descriptiveProperty = "name")
     private List<Employee> employees = new ArrayList<>();
 
 }

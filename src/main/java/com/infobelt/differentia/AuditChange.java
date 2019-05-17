@@ -5,6 +5,8 @@ import lombok.Data;
 @Data
 public class AuditChange {
 
+    private String entity;
+
     private boolean descriptive = false;
 
     private AuditEventType eventType;
