@@ -30,10 +30,8 @@ public class ObjectMetadata {
 
             for (Field field : object.getClass().getDeclaredFields()) {
                 FieldMetadata newFieldMetadata = new FieldMetadata(this, field);
-                if (newFieldMetadata.isTracked()) {
-                    fields.add(newFieldMetadata);
-                    fieldMap.put(newFieldMetadata.getFieldName(), newFieldMetadata);
-                }
+                fields.add(newFieldMetadata);
+                fieldMap.put(newFieldMetadata.getFieldName(), newFieldMetadata);
             }
 
             if (!"".equals(classAnnotation.parent())) {

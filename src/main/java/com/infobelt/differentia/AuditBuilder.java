@@ -82,7 +82,7 @@ public class AuditBuilder {
         if (om.isTracked()) {
 
             for (FieldMetadata fieldMetadata : om.getFields()) {
-                if (om.isTracked()) {
+                if (fieldMetadata.isTracked()) {
 
                     // Found a property
                     AuditChange auditChange = createAuditChange(event, fieldMetadata, referenceObject);
