@@ -1,77 +1,53 @@
 package com.infobelt.differentia;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 public class ObjectMetadata {
+    private ObjectMetadata parentObjectMetadata;
     private String propertyDescriptiveName;
-    private String fieldName;
     private String entityName;
     private boolean tracked;
-    public AuditEventType event;
     private AuditMetadata classAnnotation;
-    private AuditMetadata propertyAnnotation;
     private Class<?> clazz;
-    private Field field;
+    private List<FieldMetadata> fields = new ArrayList<>();
+    private Map<String, FieldMetadata> fieldMap = new HashMap<>();
 
-    public ObjectMetadata(AuditMetadata classAnnotation, AuditMetadata propertyAnnotation, Class<?> aClass, Field field) {
-        tracked = true;
-        this.classAnnotation = classAnnotation;
-        this.propertyAnnotation = propertyAnnotation;
-        this.clazz = aClass;
-        this.field = field;
-    }
+    public ObjectMetadata(Object object) {
+        this.classAnnotation = object.getClass().getAnnotation(AuditMetadata.class);
+        this.clazz = object.getClass();
+        if (classAnnotation != null && !classAnnotation.ignore()) {
+            setTracked(true);
 
-    public ObjectMetadata(Class<?> aClass, Field field) {
-        this.tracked = true;
-        this.clazz = aClass;
-        this.field = field;
-    }
+            for (Field field : object.getClass().getDeclaredFields()) {
+                FieldMetadata newFieldMetadata = new FieldMetadata(this, field);
+                if (newFieldMetadata.isTracked()) {
+                    fields.add(newFieldMetadata);
+                    fieldMap.put(newFieldMetadata.getFieldName(), newFieldMetadata);
+                }
+            }
 
-    public ObjectMetadata(AuditMetadata classAnnotation, ObjectMetadata om, Class<?> aClass, Field field) {
-        this.classAnnotation = classAnnotation;
-        this.propertyAnnotation = om.propertyAnnotation;
-        this.clazz = aClass;
-        this.field = field;
-    }
-
-    public static ObjectMetadata notTracked() {
-        ObjectMetadata om = new ObjectMetadata();
-        om.setTracked(false);
-        return om;
-    }
-
-    public boolean isDescriptiveField() {
-        return classAnnotation != null && classAnnotation.descriptiveProperty().equals(field.getName());
-    }
-
-    public boolean isTraversable() {
-        return propertyAnnotation != null && propertyAnnotation.traverse();
-    }
-
-    public String getPropertyDescriptiveName() {
-        if (propertyAnnotation != null) {
-            if ("".equals(propertyAnnotation.name())) {
-                return field.getName();
-            } else {
-                return propertyAnnotation.name();
+            if (!"".equals(classAnnotation.parent())) {
+                try {
+                    Object parentObject = PropertyUtils.getProperty(object, classAnnotation.parent());
+                    if (parentObject != null)
+                        this.parentObjectMetadata = new ObjectMetadata(parentObject);
+                } catch (Exception e) {
+                    throw new RuntimeException("Unable to access parent " + classAnnotation.parent() + " on object " + object, e);
+                }
             }
         } else {
-            return field.getName();
+            setTracked(false);
         }
-    }
-
-    public String getFieldName() {
-        return field.getName();
     }
 
     public String getEntityName() {
@@ -79,17 +55,6 @@ public class ObjectMetadata {
             return clazz.getSimpleName();
         } else {
             return classAnnotation.name();
-        }
-    }
-
-    public AuditEventType getEvent(AuditEventType event) {
-        switch (event) {
-            case ADD:
-                return propertyAnnotation != null ? propertyAnnotation.add() : AuditEventType.ADD;
-            case REMOVE:
-                return propertyAnnotation != null ? propertyAnnotation.remove() : AuditEventType.REMOVE;
-            default:
-                return event;
         }
     }
 
@@ -120,11 +85,24 @@ public class ObjectMetadata {
         return "";
     }
 
-    public String getDescriptiveProperty() {
-        if (propertyAnnotation != null) {
-            return propertyAnnotation.descriptiveProperty();
-        } else {
-            return "";
+
+    public boolean hasParent() {
+        return parentObjectMetadata != null;
+    }
+
+    public String getMappedBy() {
+        return classAnnotation.mappedBy();
+    }
+
+    public FieldMetadata getField(String name) {
+        return fieldMap.get(name);
+    }
+
+    public Object getParentObject(Object o) {
+        try {
+            return hasParent() ? PropertyUtils.getProperty(o, classAnnotation.parent()) : "Unknown parent";
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to get parent " + classAnnotation.parent() + " on object " + o, e);
         }
     }
 }

@@ -20,9 +20,9 @@ public class BossEmployeeTest {
 
     @Before
     public void setup() {
-        employee1 = new Employee("1", "Thing1");
-        employee2 = new Employee("2", "Thing2");
-        employee3 = new Employee("2", "Thing3");
+        employee1 = new Employee(null, "1", "Thing1");
+        employee2 = new Employee(null, "2", "Thing2");
+        employee3 = new Employee(null, "2", "Thing3");
 
         oldBoss = new Boss();
         oldBoss.setName("Phil");

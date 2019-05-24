@@ -20,9 +20,9 @@ public class AssociatedBossEmployeeTest {
 
     @Before
     public void setup() {
-        employee1 = new Employee("1", "Thing1");
-        employee2 = new Employee("2", "Thing2");
-        employee3 = new Employee("2", "Thing3");
+        employee1 = new Employee(null, "1", "Thing1");
+        employee2 = new Employee(null, "2", "Thing2");
+        employee3 = new Employee(null, "2", "Thing3");
 
         oldBoss = new AssociatedBoss();
         oldBoss.setName("Phil");
@@ -78,6 +78,48 @@ public class AssociatedBossEmployeeTest {
         assertThat(changes.get(0).getProperty(), equalTo("employees"));
         assertThat(changes.get(0).getOldValue(), equalTo("Thing2"));
         assertThat(changes.get(0).getMessage(), equalTo("Employee Thing2 has been disassociated from big boss Phil"));
+
+    }
+
+    @Test
+    public void testEmployeeChange() {
+
+        List<AuditChange> changes = AUDIT_BUILDER.buildChanges(oldBoss, newBoss);
+        assertThat(changes.size(), equalTo(1));
+        assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.CHANGE));
+        assertThat(changes.get(0).getProperty(), equalTo("name"));
+        assertThat(changes.get(0).getOldValue(), equalTo("Thing2"));
+        assertThat(changes.get(0).getMessage(), equalTo("Employee 2 name changed from Thing2 to Thing3"));
+
+    }
+
+    @Test
+    public void testEmployeeAddToBoss() {
+
+        AssociatedBoss b1 = new AssociatedBoss();
+        b1.setName("Billy");
+        Employee e1 = new Employee(b1, "1", "Thing1");
+        List<AuditChange> changes = AUDIT_BUILDER.buildChanges(null, e1);
+        assertThat(changes.size(), equalTo(3));
+        assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.ASSOCIATE));
+        assertThat(changes.get(0).getProperty(), equalTo("employees"));
+        assertThat(changes.get(0).getOldValue(), equalTo(""));
+        assertThat(changes.get(0).getMessage(), equalTo("Employee has been associated with big boss Billy"));
+
+    }
+
+    @Test
+    public void testEmployeeRemoveFromBoss() {
+
+        AssociatedBoss b1 = new AssociatedBoss();
+        b1.setName("Billy");
+        Employee e1 = new Employee(b1, "1", "Thing1");
+        List<AuditChange> changes = AUDIT_BUILDER.buildChanges(e1, null);
+        assertThat(changes.size(), equalTo(3));
+        assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.DISASSOCIATE));
+        assertThat(changes.get(0).getProperty(), equalTo("employees"));
+        assertThat(changes.get(0).getOldValue(), equalTo(""));
+        assertThat(changes.get(0).getMessage(), equalTo("Employee has been disassociated from big boss Billy"));
 
     }
 

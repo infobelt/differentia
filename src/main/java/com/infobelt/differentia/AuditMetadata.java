@@ -65,4 +65,16 @@ public @interface AuditMetadata {
      * Allows you to ignore a field or a class
      */
     boolean ignore() default false;
+
+    /**
+     * Define who the parent of a change is - this is useful in an association and disassocition
+     * model, this refers to the property that is the parent
+     */
+    String parent() default "";
+
+    /**
+     * Define the property on the parent that holds this relationship
+     * so that we understand how to get it
+     */
+    String mappedBy() default "";
 }
