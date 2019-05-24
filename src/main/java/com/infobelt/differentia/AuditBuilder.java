@@ -67,6 +67,8 @@ public class AuditBuilder {
             auditChange.setEntityDescriptiveName(om.getParentObjectMetadata().getEntityDescriptiveName(om.getParentObject(referenceObject)));
 
             FieldMetadata fieldMetadata = om.getParentObjectMetadata().getField(om.getMappedBy());
+
+            auditChange.setAffectedId(om.getParentObjectMetadata().getAffectedId(om.getParentObject(referenceObject)));
             auditChange.setEventType(fieldMetadata.getEvent(event));
             auditChange.setProperty(fieldMetadata.getFieldName());
             auditChange.setDescriptiveName(fieldMetadata.getPropertyDescriptiveName());
@@ -135,6 +137,7 @@ public class AuditBuilder {
 
     private AuditChange createAuditChange(AuditEventType event, FieldMetadata fieldMetadata, Object object) {
         AuditChange auditChange = new AuditChange();
+        auditChange.setAffectedId(fieldMetadata.getObjectMetadata().getAffectedId(object));
         auditChange.setEntity(fieldMetadata.getObjectMetadata().getEntityName());
         auditChange.setEntityDescriptiveName(fieldMetadata.getObjectMetadata().getEntityDescriptiveName(object));
         auditChange.setEventType(fieldMetadata.getEvent(event));

@@ -103,4 +103,15 @@ public class ObjectMetadata {
             throw new RuntimeException("Unable to get parent " + classAnnotation.parent() + " on object " + o, e);
         }
     }
+
+    public Object getAffectedId(Object o) {
+        try {
+            if (!"".equals(classAnnotation.id()))
+                return PropertyUtils.getProperty(o, classAnnotation.id());
+            else
+                return null;
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to get ID " + classAnnotation.id() + " on object " + o, e);
+        }
+    }
 }

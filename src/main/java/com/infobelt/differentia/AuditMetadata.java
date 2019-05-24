@@ -77,4 +77,11 @@ public @interface AuditMetadata {
      * so that we understand how to get it
      */
     String mappedBy() default "";
+
+    /**
+     * The property that is the ID for the object
+     *
+     * @return the property name of the ID column for affectedId
+     */
+    String id() default "";
 }

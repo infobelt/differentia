@@ -25,4 +25,6 @@ public class AuditChange {
 
     private String message;
 
+    private Object affectedId;
+
 }
