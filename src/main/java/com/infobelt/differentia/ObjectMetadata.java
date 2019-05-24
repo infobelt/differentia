@@ -44,6 +44,12 @@ public class ObjectMetadata {
         this.field = field;
     }
 
+    public static ObjectMetadata notTracked() {
+        ObjectMetadata om = new ObjectMetadata();
+        om.setTracked(false);
+        return om;
+    }
+
     public boolean isDescriptiveField() {
         return classAnnotation != null && classAnnotation.descriptiveProperty().equals(field.getName());
     }

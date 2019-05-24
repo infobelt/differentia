@@ -36,7 +36,7 @@ public @interface AuditMetadata {
 
     /**
      * The event type to use for an add
-     *
+     * <p>
      * This is useful is you want to handle the traverse and have it register as association
      * and disassociation
      *
@@ -46,7 +46,7 @@ public @interface AuditMetadata {
 
     /**
      * The event type to use for an add
-     *
+     * <p>
      * This is useful is you want to handle the traverse and have it register as association
      * and disassociation
      *
@@ -60,4 +60,9 @@ public @interface AuditMetadata {
      * @return false by default
      */
     boolean onlyAnnotated() default false;
+
+    /**
+     * Allows you to ignore a field or a class
+     */
+    boolean ignore() default false;
 }

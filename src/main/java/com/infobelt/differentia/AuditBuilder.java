@@ -62,7 +62,7 @@ public class AuditBuilder {
 
         AuditMetadata classAnnotation = referenceObject.getClass().getAnnotation(AuditMetadata.class);
 
-        if (classAnnotation != null) {
+        if (classAnnotation != null && !classAnnotation.ignore()) {
 
             for (Field field : referenceObject.getClass().getDeclaredFields()) {
                 ObjectMetadata om = getObjectMetadata(field, classAnnotation, referenceObject);
@@ -124,14 +124,16 @@ public class AuditBuilder {
         AuditMetadata[] metadataAnnotation = field.getAnnotationsByType(AuditMetadata.class);
         if (metadataAnnotation.length > 0) {
             AuditMetadata propertyAnnotation = metadataAnnotation[0];
+            if (propertyAnnotation.ignore()) {
+                return ObjectMetadata.notTracked();
+            }
             return new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
         } else {
             if (!classAnnotation.onlyAnnotated()) {
                 return new ObjectMetadata(referenceObject.getClass(), field);
             } else {
-                ObjectMetadata om = new ObjectMetadata();
-                om.setTracked(false);
-                return om;
+               return ObjectMetadata.notTracked();
+
             }
         }
     }
