@@ -2,6 +2,7 @@ package com.infobelt.differentia;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
 
@@ -10,21 +11,56 @@ import java.lang.reflect.Field;
 @Slf4j
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class ObjectMetadata {
+    private String propertyDescriptiveName;
+    private String fieldName;
+    private String entityName;
+    private boolean tracked;
+    public AuditEventType event;
     private AuditMetadata classAnnotation;
     private AuditMetadata propertyAnnotation;
     private Class<?> clazz;
     private Field field;
 
+    public ObjectMetadata(AuditMetadata classAnnotation, AuditMetadata propertyAnnotation, Class<?> aClass, Field field) {
+        tracked = true;
+        this.classAnnotation = classAnnotation;
+        this.propertyAnnotation = propertyAnnotation;
+        this.clazz = aClass;
+        this.field = field;
+    }
+
+    public ObjectMetadata(Class<?> aClass, Field field) {
+        this.tracked = true;
+        this.clazz = aClass;
+        this.field = field;
+    }
+
+    public ObjectMetadata(AuditMetadata classAnnotation, ObjectMetadata om, Class<?> aClass, Field field) {
+        this.classAnnotation = classAnnotation;
+        this.propertyAnnotation = om.propertyAnnotation;
+        this.clazz = aClass;
+        this.field = field;
+    }
+
     public boolean isDescriptiveField() {
-        return classAnnotation.descriptiveProperty().equals(field.getName());
+        return classAnnotation != null && classAnnotation.descriptiveProperty().equals(field.getName());
+    }
+
+    public boolean isTraversable() {
+        return propertyAnnotation != null && propertyAnnotation.traverse();
     }
 
     public String getPropertyDescriptiveName() {
-        if ("".equals(propertyAnnotation.name())) {
-            return field.getName();
+        if (propertyAnnotation != null) {
+            if ("".equals(propertyAnnotation.name())) {
+                return field.getName();
+            } else {
+                return propertyAnnotation.name();
+            }
         } else {
-            return propertyAnnotation.name();
+            return field.getName();
         }
     }
 
@@ -33,7 +69,7 @@ public class ObjectMetadata {
     }
 
     public String getEntityName() {
-        if ("".equals(classAnnotation.name())) {
+        if (classAnnotation == null || "".equals(classAnnotation.name())) {
             return clazz.getSimpleName();
         } else {
             return classAnnotation.name();
@@ -43,16 +79,17 @@ public class ObjectMetadata {
     public AuditEventType getEvent(AuditEventType event) {
         switch (event) {
             case ADD:
-                return propertyAnnotation.add();
+                return propertyAnnotation != null ? propertyAnnotation.add() : AuditEventType.ADD;
             case REMOVE:
-                return propertyAnnotation.remove();
+                return propertyAnnotation != null ? propertyAnnotation.remove() : AuditEventType.REMOVE;
             default:
                 return event;
         }
     }
 
     public String getEntityDescriptiveName(Object entity) {
-        if (!"".equals(classAnnotation.descriptiveProperty())) {
+
+        if (classAnnotation != null && !"".equals(classAnnotation.descriptiveProperty())) {
             try {
                 return String.valueOf(PropertyUtils.getProperty(entity, classAnnotation.descriptiveProperty()));
             } catch (Exception e) {
@@ -62,7 +99,7 @@ public class ObjectMetadata {
         }
 
         // Always worth seeing if we have an ID
-        if ("".equals(classAnnotation.descriptiveProperty())) {
+        if (classAnnotation == null || "".equals(classAnnotation.descriptiveProperty())) {
             Object id = null;
             try {
                 id = PropertyUtils.getProperty(entity, "id");
@@ -74,6 +111,14 @@ public class ObjectMetadata {
             }
         }
 
-        return entity.toString();
+        return "";
+    }
+
+    public String getDescriptiveProperty() {
+        if (propertyAnnotation != null) {
+            return propertyAnnotation.descriptiveProperty();
+        } else {
+            return "";
+        }
     }
 }

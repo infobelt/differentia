@@ -62,25 +62,22 @@ public class AuditBuilder {
 
         AuditMetadata classAnnotation = referenceObject.getClass().getAnnotation(AuditMetadata.class);
 
-
         if (classAnnotation != null) {
 
             for (Field field : referenceObject.getClass().getDeclaredFields()) {
-                AuditMetadata[] metadataAnnotation = field.getAnnotationsByType(AuditMetadata.class);
-                if (metadataAnnotation.length > 0) {
+                ObjectMetadata om = getObjectMetadata(field, classAnnotation, referenceObject);
 
-                    AuditMetadata propertyAnnotation = metadataAnnotation[0];
+                if (om.isTracked()) {
 
-                    ObjectMetadata om = new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
 
                     // Found a property
                     AuditChange auditChange = createAuditChange(event, om, referenceObject);
                     switch (event) {
                         case ADD:
-                            if (propertyAnnotation.traverse()) {
-                                changes.addAll(traverse(event, propertyAnnotation, classAnnotation, field, newInstance, oldInstance));
+                            if (om.isTraversable()) {
+                                changes.addAll(traverse(event, om, classAnnotation, field, newInstance, oldInstance));
                             } else {
-                                auditChange.setNewValue(getBeanValue(newInstance, field.getName(), propertyAnnotation));
+                                auditChange.setNewValue(getBeanValue(newInstance, field.getName(), om));
                                 auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
 
                                 if (auditChange.getNewValue() != null)
@@ -88,11 +85,11 @@ public class AuditBuilder {
                             }
                             break;
                         case CHANGE:
-                            if (propertyAnnotation.traverse()) {
-                                changes.addAll(traverse(event, propertyAnnotation, classAnnotation, field, newInstance, oldInstance));
+                            if (om.isTraversable()) {
+                                changes.addAll(traverse(event, om, classAnnotation, field, newInstance, oldInstance));
                             } else {
-                                String oldValue = getBeanValue(oldInstance, field.getName(), propertyAnnotation);
-                                String newValue = getBeanValue(newInstance, field.getName(), propertyAnnotation);
+                                String oldValue = getBeanValue(oldInstance, field.getName(), om);
+                                String newValue = getBeanValue(newInstance, field.getName(), om);
                                 if (!Objects.equals(newValue, oldValue)) {
                                     auditChange.setNewValue(newValue);
                                     auditChange.setOldValue(oldValue);
@@ -102,10 +99,10 @@ public class AuditBuilder {
                             }
                             break;
                         case REMOVE:
-                            if (propertyAnnotation.traverse()) {
-                                changes.addAll(traverse(event, propertyAnnotation, classAnnotation, field, newInstance, oldInstance));
+                            if (om.isTraversable()) {
+                                changes.addAll(traverse(event, om, classAnnotation, field, newInstance, oldInstance));
                             } else {
-                                auditChange.setOldValue(getBeanValue(oldInstance, field.getName(), propertyAnnotation));
+                                auditChange.setOldValue(getBeanValue(oldInstance, field.getName(), om));
                                 auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
                                 if (auditChange.getOldValue() != null)
                                     changes.add(auditChange);
@@ -113,12 +110,30 @@ public class AuditBuilder {
                             break;
                     }
                 }
+
             }
         } else {
             log.warn("You are sure you wanted to audit this object " + referenceObject.getClass() + ", if you do you need to add the @AuditMetadata annotation to the object");
         }
 
         return changes;
+    }
+
+    private ObjectMetadata getObjectMetadata(Field field, AuditMetadata classAnnotation, Object referenceObject) {
+
+        AuditMetadata[] metadataAnnotation = field.getAnnotationsByType(AuditMetadata.class);
+        if (metadataAnnotation.length > 0) {
+            AuditMetadata propertyAnnotation = metadataAnnotation[0];
+            return new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
+        } else {
+            if (!classAnnotation.onlyAnnotated()) {
+                return new ObjectMetadata(referenceObject.getClass(), field);
+            } else {
+                ObjectMetadata om = new ObjectMetadata();
+                om.setTracked(false);
+                return om;
+            }
+        }
     }
 
     private AuditChange createAuditChange(AuditEventType event, ObjectMetadata om, Object object) {
@@ -136,14 +151,14 @@ public class AuditBuilder {
      * Traverse will dig into a property and determine to traverse it and build more changes
      *
      * @param event
-     * @param propertyAnnotation
+     * @param om
      * @param classAnnotation
      * @param field
      * @param newInstance
      * @param oldInstance
      * @return
      */
-    private List<AuditChange> traverse(AuditEventType event, AuditMetadata propertyAnnotation, AuditMetadata classAnnotation, Field field, Object newInstance, Object oldInstance) {
+    private List<AuditChange> traverse(AuditEventType event, ObjectMetadata om, AuditMetadata classAnnotation, Field field, Object newInstance, Object oldInstance) {
 
         try {
             Object newValue = newInstance != null ? PropertyUtils.getProperty(newInstance, field.getName()) : null;
@@ -169,21 +184,21 @@ public class AuditBuilder {
 
                     // Removals
                     oldValues.stream().filter(o -> !newValues.contains(o)).forEach(o -> {
-                        ObjectMetadata om = new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
-                        AuditChange auditChange = createAuditChange(AuditEventType.REMOVE, om, referenceObject);
+                        ObjectMetadata newOm = new ObjectMetadata(classAnnotation, om, referenceObject.getClass(), field);
+                        AuditChange auditChange = createAuditChange(AuditEventType.REMOVE, newOm, referenceObject);
                         auditChange.setRelatedEntity(getName(o));
-                        auditChange.setOldValue(getBeanValue(o, propertyAnnotation.descriptiveProperty(), propertyAnnotation));
-                        auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
+                        auditChange.setOldValue(getBeanValue(o, newOm.getDescriptiveProperty(), newOm));
+                        auditChange.setMessage(messageBuilder.buildChangeMessage(this, newOm, auditChange));
                         changes.add(auditChange);
                     });
 
                     // Additions
                     newValues.stream().filter(o -> !oldValues.contains(o)).forEach(o -> {
-                        ObjectMetadata om = new ObjectMetadata(classAnnotation, propertyAnnotation, referenceObject.getClass(), field);
-                        AuditChange auditChange = createAuditChange(AuditEventType.ADD, om, referenceObject);
+                        ObjectMetadata newOm = new ObjectMetadata(classAnnotation, om, referenceObject.getClass(), field);
+                        AuditChange auditChange = createAuditChange(AuditEventType.ADD, newOm, referenceObject);
                         auditChange.setRelatedEntity(getName(o));
-                        auditChange.setNewValue(getBeanValue(o, propertyAnnotation.descriptiveProperty(), propertyAnnotation));
-                        auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
+                        auditChange.setNewValue(getBeanValue(o, newOm.getDescriptiveProperty(), newOm));
+                        auditChange.setMessage(messageBuilder.buildChangeMessage(this, newOm, auditChange));
                         changes.add(auditChange);
                     });
                 }
@@ -200,15 +215,17 @@ public class AuditBuilder {
     }
 
     // The aim of this is to help with the stringification of things
-    private String getBeanValue(Object instance, String name, AuditMetadata auditMetadata) {
+    private String getBeanValue(Object instance, String name, ObjectMetadata om) {
         try {
             Object value = null;
-            if ("".equals(auditMetadata.descriptiveProperty())) {
+            if ("".equals(om.getDescriptiveProperty())) {
                 value = PropertyUtils.getProperty(instance, name);
-            } else if (auditMetadata.traverse()) {
-                value = PropertyUtils.getProperty(instance, auditMetadata.descriptiveProperty());
+            } else if ("".equals(name)) {
+                value = String.valueOf(instance);
+            } else if (om.isTraversable()) {
+                value = PropertyUtils.getProperty(instance, om.getDescriptiveProperty());
             } else {
-                value = PropertyUtils.getProperty(PropertyUtils.getProperty(instance, name), auditMetadata.descriptiveProperty());
+                value = PropertyUtils.getProperty(PropertyUtils.getProperty(instance, name), om.getDescriptiveProperty());
             }
 
             return value == null ? null : String.valueOf(value);

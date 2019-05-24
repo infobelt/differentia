@@ -40,7 +40,7 @@ public class DefaultMessageBuilder implements MessageBuilder {
         valuesMap.put("oldValue", auditChange.getOldValue());
         addEntry("relatedEntity", auditChange.getRelatedEntity(), valuesMap);
         StringSubstitutor sub = new StringSubstitutor(valuesMap);
-        return sub.replace(template);
+        return StringUtils.normalizeSpace(sub.replace(template));
     }
 
     private void addEntry(String key, String value, Map<String, String> valuesMap) {

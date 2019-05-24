@@ -3,7 +3,7 @@ package com.infobelt.differentia;
 import lombok.Data;
 
 @Data
-@AuditMetadata(name = "example", descriptiveProperty = "name")
+@AuditMetadata(name = "example", descriptiveProperty = "name", onlyAnnotated = true)
 public class SimpleExampleObject {
 
     @AuditMetadata(name="First name")

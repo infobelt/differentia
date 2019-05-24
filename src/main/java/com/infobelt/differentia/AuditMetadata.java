@@ -53,4 +53,11 @@ public @interface AuditMetadata {
      * @return The audit event type to use for a remove
      */
     AuditEventType remove() default AuditEventType.REMOVE;
+
+    /**
+     * If set to true that we will only monitor the fields that are annotated
+     *
+     * @return false by default
+     */
+    boolean onlyAnnotated() default false;
 }
