@@ -69,7 +69,6 @@ public class AuditBuilder {
 
                 if (om.isTracked()) {
 
-
                     // Found a property
                     AuditChange auditChange = createAuditChange(event, om, referenceObject);
                     switch (event) {
@@ -132,7 +131,7 @@ public class AuditBuilder {
             if (!classAnnotation.onlyAnnotated()) {
                 return new ObjectMetadata(referenceObject.getClass(), field);
             } else {
-               return ObjectMetadata.notTracked();
+                return ObjectMetadata.notTracked();
 
             }
         }
@@ -238,17 +237,21 @@ public class AuditBuilder {
         }
     }
 
-    public String getName(Object instance, boolean capitalize) {
-        return capitalize ? StringUtils.capitalize(getName(instance)) : StringUtils.uncapitalize(getName(instance));
+    public String getName(Object instance, boolean includeDescriptive, boolean capitalize) {
+        return capitalize ? StringUtils.capitalize(getName(instance, includeDescriptive)) : StringUtils.uncapitalize(getName(instance, includeDescriptive));
     }
 
     public String getName(Object instance) {
+        return getName(instance, true);
+    }
+
+    public String getName(Object instance, boolean includeDescriptive) {
         StringBuilder sb = new StringBuilder();
         AuditMetadata auditMetadata = instance.getClass().getAnnotation(AuditMetadata.class);
         if (auditMetadata != null && !"".equals(auditMetadata.name())) {
             sb.append(auditMetadata.name());
 
-            if (!"".equals(auditMetadata.descriptiveProperty())) {
+            if (includeDescriptive && !"".equals(auditMetadata.descriptiveProperty())) {
                 try {
                     sb.append(" ");
                     sb.append(BeanUtils.getProperty(instance, auditMetadata.descriptiveProperty()));

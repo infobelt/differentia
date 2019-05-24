@@ -24,7 +24,7 @@ public class DefaultMessageBuilder implements MessageBuilder {
 
     @Override
     public String buildChangesMessage(AuditBuilder builder, Object newInstance, Object oldInstance, List<AuditChange> changes) {
-        return builder.getName(newInstance, true) + " has changed";
+        return builder.getName(newInstance, true, true) + " has changed";
     }
 
     @Override
