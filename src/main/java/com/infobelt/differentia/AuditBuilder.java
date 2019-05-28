@@ -235,6 +235,11 @@ public class AuditBuilder {
 
     // The aim of this is to help with the stringification of things
     private String getBeanValue(Object instance, String name, FieldMetadata fieldMetadata) {
+
+        // Handle a null object
+        if (instance==null)
+            return null;
+
         try {
             Object value = null;
             if ("".equals(fieldMetadata.getDescriptiveProperty())) {
