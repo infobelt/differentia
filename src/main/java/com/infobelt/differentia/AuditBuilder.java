@@ -249,7 +249,12 @@ public class AuditBuilder {
             } else if (fieldMetadata.isTraversable()) {
                 value = PropertyUtils.getProperty(instance, fieldMetadata.getDescriptiveProperty());
             } else {
-                value = PropertyUtils.getProperty(PropertyUtils.getProperty(instance, name), fieldMetadata.getDescriptiveProperty());
+                Object propertyBean = PropertyUtils.getProperty(instance, name);
+                if (propertyBean==null) {
+                    value = null;
+                } else {
+                    value = PropertyUtils.getProperty(propertyBean, fieldMetadata.getDescriptiveProperty());
+                }
             }
 
             return value == null ? null : String.valueOf(value);
