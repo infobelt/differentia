@@ -62,6 +62,8 @@ public class AuditBuilder {
 
         // Do we have a parent, then we need to make sure we have a change for it
         if (om.hasParent()) {
+
+
             AuditChange auditChange = new AuditChange();
             auditChange.setEntity(om.getParentObjectMetadata().getEntityName());
             auditChange.setEntityDescriptiveName(om.getParentObjectMetadata().getEntityDescriptiveName(om.getParentObject(referenceObject)));
@@ -78,7 +80,25 @@ public class AuditBuilder {
             auditChange.setOldValue("");
             auditChange.setMessage(messageBuilder.buildChangeMessage(this, om.getParentObjectMetadata(), auditChange));
 
-            changes.add(auditChange);
+            if (event == AuditEventType.CHANGE) {
+                try {
+                    Object oldParent = om.getParentObject(oldInstance);
+                    Object oldParentValue = PropertyUtils.getProperty(oldParent, fieldMetadata.getFieldName());
+                    if (oldParentValue instanceof Collection) {
+                        if (!((Collection) oldParentValue).contains(oldInstance)) {
+                            changes.add(auditChange);
+                        }
+                    } else {
+                        if (!oldParentValue.equals(oldInstance)) {
+                            changes.add(auditChange);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new RuntimeException("Unable to get mappedBy field " + fieldMetadata.getFieldName() + " on " + oldInstance, e);
+                }
+            } else {
+                changes.add(auditChange);
+            }
         }
 
         if (om.isTracked()) {
@@ -156,7 +176,8 @@ public class AuditBuilder {
      * @param oldInstance
      * @return
      */
-    private List<AuditChange> traverse(AuditEventType event, FieldMetadata fieldMetadata, Object newInstance, Object oldInstance) {
+    private List<AuditChange> traverse(AuditEventType event, FieldMetadata fieldMetadata, Object
+            newInstance, Object oldInstance) {
 
         try {
             Object newValue = newInstance != null ? PropertyUtils.getProperty(newInstance, fieldMetadata.getFieldName()) : null;
