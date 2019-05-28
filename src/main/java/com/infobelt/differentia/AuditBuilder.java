@@ -148,9 +148,7 @@ public class AuditBuilder {
                 }
 
             }
-        } else {
-            log.warn("You are sure you wanted to audit this object " + referenceObject.getClass() + ", if you do you need to add the @AuditMetadata annotation to the object");
-        }
+        } 
 
         return changes;
     }
