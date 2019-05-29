@@ -12,7 +12,7 @@ In your Java application add a dependency on:
 <dependency>
     <groupId>com.infobelt</groupId>
     <artifactId>differentia</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>${project.version}</version>
 </dependency>
 ```
 
