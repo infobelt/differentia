@@ -148,7 +148,7 @@ public class AuditBuilder {
                 }
 
             }
-        } 
+        }
 
         return changes;
     }
