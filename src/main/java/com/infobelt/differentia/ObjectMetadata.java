@@ -109,7 +109,11 @@ public class ObjectMetadata {
             if (!"".equals(classAnnotation.id()))
                 return PropertyUtils.getProperty(o, classAnnotation.id());
             else
-                return null;
+                if (PropertyUtils.isReadable(o,"id")) {
+                    return PropertyUtils.getProperty(o, "id");
+                } else {
+                    return null;
+                }
         } catch (Exception e) {
             throw new RuntimeException("Unable to get ID " + classAnnotation.id() + " on object " + o, e);
         }
