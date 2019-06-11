@@ -106,12 +106,12 @@ public class AuditBuilder {
             switch (event) {
                 case ADD:
                     AuditChange newAudit = createAuditChange(event, new FieldMetadata(om,null), referenceObject);
-                    newAudit.setMessage(messageBuilder.buildNewMessage(this, om));
+                    newAudit.setMessage(messageBuilder.buildNewMessage(this, referenceObject));
                     changes.add(newAudit);
                     break;
                 case REMOVE:
                     AuditChange deleteAudit = createAuditChange(event, new FieldMetadata(om,null), referenceObject);
-                    deleteAudit.setMessage(messageBuilder.buildDeleteMessage(this, om));
+                    deleteAudit.setMessage(messageBuilder.buildDeleteMessage(this, referenceObject));
                     changes.add(deleteAudit);
                     break;
             }
