@@ -19,10 +19,12 @@ public class FieldMetadata {
 
     public FieldMetadata(ObjectMetadata objectMetadata, Field field) {
         this.objectMetadata = objectMetadata;
-        AuditMetadata[] annotations = field.getAnnotationsByType(AuditMetadata.class);
-        this.propertyAnnotation = annotations.length > 0 ? annotations[0] : null;
-        this.field = field;
 
+        if (field != null) {
+            AuditMetadata[] annotations = field.getAnnotationsByType(AuditMetadata.class);
+            this.propertyAnnotation = annotations.length > 0 ? annotations[0] : null;
+            this.field = field;
+        }
         this.tracked = true;
 
         if (objectMetadata.getClassAnnotation().onlyAnnotated() && propertyAnnotation == null) {
@@ -33,7 +35,7 @@ public class FieldMetadata {
     }
 
     public boolean isDescriptiveField() {
-        return objectMetadata.getClassAnnotation() != null && objectMetadata.getClassAnnotation().descriptiveProperty().equals(field.getName());
+        return objectMetadata.getClassAnnotation() != null && objectMetadata.getClassAnnotation().descriptiveProperty().equals(getFieldName());
     }
 
     public boolean isTraversable() {
@@ -59,12 +61,12 @@ public class FieldMetadata {
                 return propertyAnnotation.name();
             }
         } else {
-            return field.getName();
+            return getFieldName();
         }
     }
 
     public String getFieldName() {
-        return field.getName();
+        return field != null ? field.getName() : null;
     }
 
     public String getDescriptiveProperty() {

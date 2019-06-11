@@ -103,6 +103,19 @@ public class AuditBuilder {
 
         if (om.isTracked()) {
 
+            switch (event) {
+                case ADD:
+                    AuditChange newAudit = createAuditChange(event, new FieldMetadata(om,null), referenceObject);
+                    newAudit.setMessage(messageBuilder.buildNewMessage(this, om));
+                    changes.add(newAudit);
+                    break;
+                case REMOVE:
+                    AuditChange deleteAudit = createAuditChange(event, new FieldMetadata(om,null), referenceObject);
+                    deleteAudit.setMessage(messageBuilder.buildDeleteMessage(this, om));
+                    changes.add(deleteAudit);
+                    break;
+            }
+
             for (FieldMetadata fieldMetadata : om.getFields()) {
                 if (fieldMetadata.isTracked()) {
 
@@ -143,6 +156,8 @@ public class AuditBuilder {
                                 if (auditChange.getOldValue() != null)
                                     changes.add(auditChange);
                             }
+
+
                             break;
                     }
                 }
@@ -235,7 +250,7 @@ public class AuditBuilder {
     private String getBeanValue(Object instance, String name, FieldMetadata fieldMetadata) {
 
         // Handle a null object
-        if (instance==null)
+        if (instance == null)
             return null;
 
         try {
@@ -248,7 +263,7 @@ public class AuditBuilder {
                 value = PropertyUtils.getProperty(instance, fieldMetadata.getDescriptiveProperty());
             } else {
                 Object propertyBean = PropertyUtils.getProperty(instance, name);
-                if (propertyBean==null) {
+                if (propertyBean == null) {
                     value = null;
                 } else {
                     value = PropertyUtils.getProperty(propertyBean, fieldMetadata.getDescriptiveProperty());

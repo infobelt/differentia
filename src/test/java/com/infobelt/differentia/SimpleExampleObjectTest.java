@@ -81,14 +81,14 @@ public class SimpleExampleObjectTest {
         SimpleExampleObject obj2 = new SimpleExampleObject();
         obj2.setName("Toasty");
         List<AuditChange> changes = AUDIT_BUILDER.buildChanges(null, obj2);
-        assertThat(changes.size(), equalTo(1));
-        assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.ADD));
-        assertThat(changes.get(0).getProperty(), equalTo("name"));
-        assertThat(changes.get(0).getNewValue(), equalTo("Toasty"));
-        assertThat(changes.get(0).getOldValue(), equalTo(null));
-        assertThat(changes.get(0).getDescriptiveName(), equalTo("First name"));
-        assertThat(changes.get(0).isDescriptive(), equalTo(true));
-        assertThat(changes.get(0).getMessage(), equalTo("New example has first name of Toasty"));
+        assertThat(changes.size(), equalTo(2));
+        assertThat(changes.get(1).getEventType(), equalTo(AuditEventType.ADD));
+        assertThat(changes.get(1).getProperty(), equalTo("name"));
+        assertThat(changes.get(1).getNewValue(), equalTo("Toasty"));
+        assertThat(changes.get(1).getOldValue(), equalTo(null));
+        assertThat(changes.get(1).getDescriptiveName(), equalTo("First name"));
+        assertThat(changes.get(1).isDescriptive(), equalTo(true));
+        assertThat(changes.get(1).getMessage(), equalTo("New example has first name of Toasty"));
     }
 
     @Test
@@ -96,15 +96,15 @@ public class SimpleExampleObjectTest {
         SimpleExampleObject obj1 = new SimpleExampleObject();
         obj1.setName("Cheese");
         List<AuditChange> changes = AUDIT_BUILDER.buildChanges(obj1, null);
-        assertThat(changes.size(), equalTo(1));
-        assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.REMOVE));
-        assertThat(changes.get(0).getProperty(), equalTo("name"));
-        assertThat(changes.get(0).getNewValue(), equalTo(null));
-        assertThat(changes.get(0).getOldValue(), equalTo("Cheese"));
-        assertThat(changes.get(0).getDescriptiveName(), equalTo("First name"));
-        assertThat(changes.get(0).isDescriptive(), equalTo(true));
+        assertThat(changes.size(), equalTo(2));
+        assertThat(changes.get(1).getEventType(), equalTo(AuditEventType.REMOVE));
+        assertThat(changes.get(1).getProperty(), equalTo("name"));
+        assertThat(changes.get(1).getNewValue(), equalTo(null));
+        assertThat(changes.get(1).getOldValue(), equalTo("Cheese"));
+        assertThat(changes.get(1).getDescriptiveName(), equalTo("First name"));
+        assertThat(changes.get(1).isDescriptive(), equalTo(true));
 
-        assertThat(changes.get(0).getMessage(), equalTo("Removed example had first name of Cheese"));
+        assertThat(changes.get(1).getMessage(), equalTo("Removed example had first name of Cheese"));
 
 
     }
