@@ -16,6 +16,20 @@ In your Java application add a dependency on:
 </dependency>
 ```
 
+Note you will need to add the Infobelt Nexus repository
+
+```xml
+ <repositories>
+    <repository>
+        <releases>
+            <enabled>true</enabled>
+        </releases>
+        <id>infobelt-nexus</id>
+        <url>https://nexus.jx.infobelt.com/repository/maven-releases/</url>
+    </repository>
+</repositories>
+```
+
 Getting Started
 ---------------
 
