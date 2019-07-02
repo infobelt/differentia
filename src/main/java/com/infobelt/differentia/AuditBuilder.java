@@ -76,8 +76,15 @@ public class AuditBuilder {
             auditChange.setDescriptiveName(fieldMetadata.getPropertyDescriptiveName());
             auditChange.setDescriptive(fieldMetadata.isDescriptiveField());
             auditChange.setRelatedEntity(om.getEntityName());
-            auditChange.setNewValue("");
-            auditChange.setOldValue("");
+
+            if (event == AuditEventType.ADD) {
+                auditChange.setOldValue("");
+                auditChange.setNewValue(om.getEntityDescriptiveName(newInstance));
+            } else {
+                auditChange.setNewValue("");
+                auditChange.setOldValue(om.getEntityDescriptiveName(oldInstance));
+            }
+
             auditChange.setMessage(messageBuilder.buildChangeMessage(this, om.getParentObjectMetadata(), auditChange));
 
             if (event == AuditEventType.CHANGE) {

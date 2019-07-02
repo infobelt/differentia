@@ -45,7 +45,7 @@ public class BossEmployeeTest {
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.CHANGE));
         assertThat(changes.get(0).getOldValue(), equalTo("Thing2"));
         assertThat(changes.get(0).getNewValue(), equalTo("Thing3"));
-        assertThat(changes.get(0).getMessage(), equalTo("Employee 2 name changed from Thing2 to Thing3"));
+        assertThat(changes.get(0).getMessage(), equalTo("Employee Thing2 name changed from Thing2 to Thing3"));
         assertThat(changes.get(0).getAffectedId(),equalTo("2"));
 
     }

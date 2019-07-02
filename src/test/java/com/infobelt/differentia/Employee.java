@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
-@AuditMetadata(parent = "boss", mappedBy = "employees", id = "id")
+@AuditMetadata(parent = "boss", mappedBy = "employees", id = "id", descriptiveProperty = "name")
 @Data
 @EqualsAndHashCode(of = "id")
 @AllArgsConstructor
