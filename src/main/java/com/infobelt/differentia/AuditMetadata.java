@@ -73,6 +73,12 @@ public @interface AuditMetadata {
     String parent() default "";
 
     /**
+     * Define who multiple the parent of a change is - this is useful in an association and disassocition
+     * model, this refers to the property that is the parent
+     */
+    String[] parents() default {};
+
+    /**
      * Define the property on the parent that holds this relationship
      * so that we understand how to get it
      */

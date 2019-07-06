@@ -13,7 +13,7 @@ import java.util.Map;
 @Slf4j
 @Data
 public class ObjectMetadata {
-    private ObjectMetadata parentObjectMetadata;
+    private List<ObjectMetadata> parentsObjectMetadata = new ArrayList<>();
     private String propertyDescriptiveName;
     private String entityName;
     private boolean tracked;
@@ -22,7 +22,7 @@ public class ObjectMetadata {
     private List<FieldMetadata> fields = new ArrayList<>();
     private Map<String, FieldMetadata> fieldMap = new HashMap<>();
 
-    public ObjectMetadata(Object object) {
+    ObjectMetadata(Object object) {
         this.classAnnotation = object.getClass().getAnnotation(AuditMetadata.class);
         this.clazz = object.getClass();
         if (classAnnotation != null && !classAnnotation.ignore()) {
@@ -35,16 +35,26 @@ public class ObjectMetadata {
             }
 
             if (!"".equals(classAnnotation.parent())) {
-                try {
-                    Object parentObject = PropertyUtils.getProperty(object, classAnnotation.parent());
-                    if (parentObject != null)
-                        this.parentObjectMetadata = new ObjectMetadata(parentObject);
-                } catch (Exception e) {
-                    throw new RuntimeException("Unable to access parent " + classAnnotation.parent() + " on object " + object, e);
+                addParent(object, classAnnotation.parent());
+            }
+
+            if (classAnnotation.parents().length>0) {
+                for(String parent : classAnnotation.parents()) {
+                    addParent(object, parent);
                 }
             }
         } else {
             setTracked(false);
+        }
+    }
+
+    private void addParent(Object object, String parent) {
+        try {
+            Object parentObject = PropertyUtils.getProperty(object, parent);
+            if (parentObject != null)
+                this.parentsObjectMetadata.add(new ObjectMetadata(parentObject));
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to access parent " + classAnnotation.parent() + " on object " + object, e);
         }
     }
 
@@ -85,7 +95,7 @@ public class ObjectMetadata {
 
 
     public boolean hasParent() {
-        return parentObjectMetadata != null;
+        return !parentsObjectMetadata.isEmpty();
     }
 
     public String getMappedBy() {

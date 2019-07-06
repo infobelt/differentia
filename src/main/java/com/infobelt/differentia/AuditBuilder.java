@@ -63,48 +63,49 @@ public class AuditBuilder {
         // Do we have a parent, then we need to make sure we have a change for it
         if (om.hasParent()) {
 
+            for(ObjectMetadata parent : om.getParentsObjectMetadata()) {
+                AuditChange auditChange = new AuditChange();
+                auditChange.setEntity(parent.getEntityName());
+                auditChange.setEntityDescriptiveName(parent.getEntityDescriptiveName(om.getParentObject(referenceObject)));
 
-            AuditChange auditChange = new AuditChange();
-            auditChange.setEntity(om.getParentObjectMetadata().getEntityName());
-            auditChange.setEntityDescriptiveName(om.getParentObjectMetadata().getEntityDescriptiveName(om.getParentObject(referenceObject)));
+                FieldMetadata fieldMetadata = parent.getField(om.getMappedBy());
 
-            FieldMetadata fieldMetadata = om.getParentObjectMetadata().getField(om.getMappedBy());
+                auditChange.setAffectedId(parent.getAffectedId(om.getParentObject(referenceObject)));
+                auditChange.setEventType(fieldMetadata.getEvent(event));
+                auditChange.setProperty(fieldMetadata.getFieldName());
+                auditChange.setDescriptiveName(fieldMetadata.getPropertyDescriptiveName());
+                auditChange.setDescriptive(fieldMetadata.isDescriptiveField());
+                auditChange.setRelatedEntity(om.getEntityName());
 
-            auditChange.setAffectedId(om.getParentObjectMetadata().getAffectedId(om.getParentObject(referenceObject)));
-            auditChange.setEventType(fieldMetadata.getEvent(event));
-            auditChange.setProperty(fieldMetadata.getFieldName());
-            auditChange.setDescriptiveName(fieldMetadata.getPropertyDescriptiveName());
-            auditChange.setDescriptive(fieldMetadata.isDescriptiveField());
-            auditChange.setRelatedEntity(om.getEntityName());
-
-            if (event == AuditEventType.ADD) {
-                auditChange.setOldValue("");
-                auditChange.setNewValue(om.getEntityDescriptiveName(newInstance));
-            } else {
-                auditChange.setNewValue("");
-                auditChange.setOldValue(om.getEntityDescriptiveName(oldInstance));
-            }
-
-            auditChange.setMessage(messageBuilder.buildChangeMessage(this, om.getParentObjectMetadata(), auditChange));
-
-            if (event == AuditEventType.CHANGE) {
-                try {
-                    Object oldParent = om.getParentObject(oldInstance);
-                    Object oldParentValue = PropertyUtils.getProperty(oldParent, fieldMetadata.getFieldName());
-                    if (oldParentValue instanceof Collection) {
-                        if (!((Collection) oldParentValue).contains(oldInstance)) {
-                            changes.add(auditChange);
-                        }
-                    } else {
-                        if (!oldParentValue.equals(oldInstance)) {
-                            changes.add(auditChange);
-                        }
-                    }
-                } catch (Exception e) {
-                    throw new RuntimeException("Unable to get mappedBy field " + fieldMetadata.getFieldName() + " on " + oldInstance, e);
+                if (event == AuditEventType.ADD) {
+                    auditChange.setOldValue("");
+                    auditChange.setNewValue(om.getEntityDescriptiveName(newInstance));
+                } else {
+                    auditChange.setNewValue("");
+                    auditChange.setOldValue(om.getEntityDescriptiveName(oldInstance));
                 }
-            } else {
-                changes.add(auditChange);
+
+                auditChange.setMessage(messageBuilder.buildChangeMessage(this, parent, auditChange));
+
+                if (event == AuditEventType.CHANGE) {
+                    try {
+                        Object oldParent = om.getParentObject(oldInstance);
+                        Object oldParentValue = PropertyUtils.getProperty(oldParent, fieldMetadata.getFieldName());
+                        if (oldParentValue instanceof Collection) {
+                            if (!((Collection) oldParentValue).contains(oldInstance)) {
+                                changes.add(auditChange);
+                            }
+                        } else {
+                            if (!oldParentValue.equals(oldInstance)) {
+                                changes.add(auditChange);
+                            }
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException("Unable to get mappedBy field " + fieldMetadata.getFieldName() + " on " + oldInstance, e);
+                    }
+                } else {
+                    changes.add(auditChange);
+                }
             }
         }
 
