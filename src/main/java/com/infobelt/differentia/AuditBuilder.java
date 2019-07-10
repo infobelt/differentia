@@ -66,11 +66,11 @@ public class AuditBuilder {
             for(ObjectMetadata parent : om.getParentsObjectMetadata()) {
                 AuditChange auditChange = new AuditChange();
                 auditChange.setEntity(parent.getEntityName());
-                auditChange.setEntityDescriptiveName(parent.getEntityDescriptiveName(om.getParentObject(referenceObject)));
+                auditChange.setEntityDescriptiveName(parent.getEntityDescriptiveName(om.getParentObject(parent, referenceObject)));
 
                 FieldMetadata fieldMetadata = parent.getField(om.getMappedBy());
 
-                auditChange.setAffectedId(parent.getAffectedId(om.getParentObject(referenceObject)));
+                auditChange.setAffectedId(parent.getAffectedId(om.getParentObject(parent, referenceObject)));
                 auditChange.setEventType(fieldMetadata.getEvent(event));
                 auditChange.setProperty(fieldMetadata.getFieldName());
                 auditChange.setDescriptiveName(fieldMetadata.getPropertyDescriptiveName());
@@ -89,7 +89,7 @@ public class AuditBuilder {
 
                 if (event == AuditEventType.CHANGE) {
                     try {
-                        Object oldParent = om.getParentObject(oldInstance);
+                        Object oldParent = om.getParentObject(parent, oldInstance);
                         Object oldParentValue = PropertyUtils.getProperty(oldParent, fieldMetadata.getFieldName());
                         if (oldParentValue instanceof Collection) {
                             if (!((Collection) oldParentValue).contains(oldInstance)) {

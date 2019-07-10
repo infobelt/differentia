@@ -22,6 +22,8 @@ public class ObjectMetadata {
     private List<FieldMetadata> fields = new ArrayList<>();
     private Map<String, FieldMetadata> fieldMap = new HashMap<>();
 
+    private String parent;
+
     ObjectMetadata(Object object) {
         this.classAnnotation = object.getClass().getAnnotation(AuditMetadata.class);
         this.clazz = object.getClass();
@@ -38,8 +40,8 @@ public class ObjectMetadata {
                 addParent(object, classAnnotation.parent());
             }
 
-            if (classAnnotation.parents().length>0) {
-                for(String parent : classAnnotation.parents()) {
+            if (classAnnotation.parents().length > 0) {
+                for (String parent : classAnnotation.parents()) {
                     addParent(object, parent);
                 }
             }
@@ -51,8 +53,12 @@ public class ObjectMetadata {
     private void addParent(Object object, String parent) {
         try {
             Object parentObject = PropertyUtils.getProperty(object, parent);
-            if (parentObject != null)
-                this.parentsObjectMetadata.add(new ObjectMetadata(parentObject));
+            ObjectMetadata parentObjectMetadata;
+            if (parentObject != null) {
+                parentObjectMetadata = new ObjectMetadata(parentObject);
+                parentObjectMetadata.setParent(parent);
+                this.parentsObjectMetadata.add(parentObjectMetadata);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Unable to access parent " + classAnnotation.parent() + " on object " + object, e);
         }
@@ -106,9 +112,12 @@ public class ObjectMetadata {
         return fieldMap.get(name);
     }
 
-    public Object getParentObject(Object o) {
+    public Object getParentObject(ObjectMetadata parentOm, Object o) {
         try {
-            return hasParent() ? PropertyUtils.getProperty(o, classAnnotation.parent()) : "Unknown parent";
+            if (parentOm.parent != null) {
+                return PropertyUtils.getProperty(o, parentOm.parent);
+            }
+            return "Unknown parent";
         } catch (Exception e) {
             throw new RuntimeException("Unable to get parent " + classAnnotation.parent() + " on object " + o, e);
         }
@@ -118,12 +127,11 @@ public class ObjectMetadata {
         try {
             if (!"".equals(classAnnotation.id()))
                 return PropertyUtils.getProperty(o, classAnnotation.id());
-            else
-                if (PropertyUtils.isReadable(o,"id")) {
-                    return PropertyUtils.getProperty(o, "id");
-                } else {
-                    return null;
-                }
+            else if (PropertyUtils.isReadable(o, "id")) {
+                return PropertyUtils.getProperty(o, "id");
+            } else {
+                return null;
+            }
         } catch (Exception e) {
             throw new RuntimeException("Unable to get ID " + classAnnotation.id() + " on object " + o, e);
         }
