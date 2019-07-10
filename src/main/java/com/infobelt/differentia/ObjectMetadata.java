@@ -3,6 +3,7 @@ package com.infobelt.differentia;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -23,6 +24,8 @@ public class ObjectMetadata {
     private Map<String, FieldMetadata> fieldMap = new HashMap<>();
 
     private String parent;
+
+    private boolean join = false;
 
     ObjectMetadata(Object object) {
         this.classAnnotation = object.getClass().getAnnotation(AuditMetadata.class);
@@ -48,6 +51,37 @@ public class ObjectMetadata {
         } else {
             setTracked(false);
         }
+
+        if (!"".equals(classAnnotation.left()) && !"".equals(classAnnotation.right())) {
+            // We have a join table - lets add some logic to track it
+            join = true;
+        }
+    }
+
+    public ObjectMetadata getLeft(Object object) {
+        Object leftObject = getLeftObject(object);
+        return leftObject != null ? new ObjectMetadata(leftObject) : null;
+    }
+
+    public Object getLeftObject(Object object) {
+        try {
+            return PropertyUtils.getProperty(object, classAnnotation.left());
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to access left " + classAnnotation.left() + " on object " + object, e);
+        }
+    }
+
+    public Object getRightObject(Object object) {
+        try {
+            return PropertyUtils.getProperty(object, classAnnotation.right());
+        } catch (Exception e) {
+            throw new RuntimeException("Unable to access left " + classAnnotation.right() + " on object " + object, e);
+        }
+    }
+
+    public ObjectMetadata getRight(Object object) {
+        Object rightObject = getRightObject(object);
+        return rightObject != null ? new ObjectMetadata(rightObject) : null;
     }
 
     private void addParent(Object object, String parent) {

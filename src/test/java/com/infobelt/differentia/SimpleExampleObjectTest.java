@@ -1,5 +1,6 @@
 package com.infobelt.differentia;
 
+import com.infobelt.differentia.models.SimpleExampleObject;
 import org.junit.Test;
 
 import java.util.List;

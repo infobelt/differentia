@@ -1,5 +1,7 @@
 package com.infobelt.differentia;
 
+import com.infobelt.differentia.models.Bun;
+import com.infobelt.differentia.models.HotDog;
 import org.junit.Before;
 import org.junit.Test;
 

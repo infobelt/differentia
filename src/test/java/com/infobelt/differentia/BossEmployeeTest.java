@@ -1,5 +1,7 @@
 package com.infobelt.differentia;
 
+import com.infobelt.differentia.models.Boss;
+import com.infobelt.differentia.models.Employee;
 import org.junit.Before;
 import org.junit.Test;
 

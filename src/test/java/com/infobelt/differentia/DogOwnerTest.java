@@ -1,5 +1,7 @@
 package com.infobelt.differentia;
 
+import com.infobelt.differentia.models.Dog;
+import com.infobelt.differentia.models.Owner;
 import org.junit.Test;
 
 import java.util.List;

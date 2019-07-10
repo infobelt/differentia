@@ -60,6 +60,65 @@ public class AuditBuilder {
             event = AuditEventType.REMOVE;
         }
 
+        // Do we have a join
+        if (om.isJoin()) {
+
+            // We need to construct either an add or an associate based on the left and right
+
+            // First add a change first to second
+            AuditChange leftChange = new AuditChange();
+            leftChange.setEntity(om.getLeft(referenceObject).getEntityName());
+            leftChange.setEntityDescriptiveName(om.getLeft(referenceObject).getEntityDescriptiveName(om.getLeftObject(referenceObject)));
+
+            FieldMetadata rightFieldTarget = om.getField(om.getClassAnnotation().right());
+
+            leftChange.setAffectedId(om.getLeft(referenceObject).getAffectedId(om.getLeftObject(referenceObject)));
+
+            leftChange.setEventType(rightFieldTarget.getEvent(event));
+            leftChange.setProperty(rightFieldTarget.getFieldName());
+            leftChange.setDescriptiveName(rightFieldTarget.getPropertyDescriptiveName());
+            leftChange.setDescriptive(rightFieldTarget.isDescriptiveField());
+            leftChange.setRelatedEntity(om.getRight(referenceObject).getEntityName());
+
+            if (event == AuditEventType.ADD) {
+                leftChange.setOldValue("");
+                leftChange.setNewValue(om.getRight(newInstance).getEntityDescriptiveName(om.getRightObject(newInstance)));
+            } else {
+                leftChange.setNewValue("");
+                leftChange.setOldValue(om.getRight(oldInstance).getEntityDescriptiveName(om.getRightObject(oldInstance)));
+            }
+
+            leftChange.setMessage(messageBuilder.buildChangeMessage(this, om, leftChange));
+
+            changes.add(leftChange);
+
+            AuditChange rightChange = new AuditChange();
+            rightChange.setEntity(om.getRight(referenceObject).getEntityName());
+            rightChange.setEntityDescriptiveName(om.getRight(referenceObject).getEntityDescriptiveName(om.getRightObject(referenceObject)));
+
+            FieldMetadata leftFieldTarget = om.getField(om.getClassAnnotation().left());
+
+            rightChange.setAffectedId(om.getRight(referenceObject).getAffectedId(om.getRightObject(referenceObject)));
+
+            rightChange.setEventType(leftFieldTarget.getEvent(event));
+            rightChange.setProperty(leftFieldTarget.getFieldName());
+            rightChange.setDescriptiveName(leftFieldTarget.getPropertyDescriptiveName());
+            rightChange.setDescriptive(leftFieldTarget.isDescriptiveField());
+            rightChange.setRelatedEntity(om.getLeft(referenceObject).getEntityName());
+
+            if (event == AuditEventType.ADD) {
+                rightChange.setOldValue("");
+                rightChange.setNewValue(om.getLeft(newInstance).getEntityDescriptiveName(om.getLeftObject(newInstance)));
+            } else {
+                rightChange.setNewValue("");
+                rightChange.setOldValue(om.getLeft(oldInstance).getEntityDescriptiveName(om.getLeftObject(oldInstance)));
+            }
+
+            rightChange.setMessage(messageBuilder.buildChangeMessage(this, om, rightChange));
+
+            changes.add(rightChange);
+        }
+
         // Do we have a parent, then we need to make sure we have a change for it
         if (om.hasParent()) {
 

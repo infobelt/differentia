@@ -79,6 +79,16 @@ public @interface AuditMetadata {
     String[] parents() default {};
 
     /**
+     * Left side of the many to many (join) table
+     */
+    String left() default "";
+
+    /**
+     * Left side of the many to many (join) table
+     */
+    String right() default "";
+
+    /**
      * Define the property on the parent that holds this relationship
      * so that we understand how to get it
      */
