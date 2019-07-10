@@ -1,19 +1,20 @@
 package com.infobelt.differentia.models;
 
+import com.infobelt.differentia.AuditEventType;
 import com.infobelt.differentia.AuditMetadata;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@AuditMetadata(name = "Bossing", descriptiveProperty = "name")
+@AuditMetadata(name = "Enrollment", left = "student", right = "course")
 @Data
-public class Student {
+public class Enrollment {
 
-    @AuditMetadata
-    private String name;
+    @AuditMetadata(remove = AuditEventType.DISASSOCIATE, add=AuditEventType.ASSOCIATE)
+    private Course course;
 
-    @AuditMetadata(traverse = true, descriptiveProperty = "name")
-    private List<Employee> employees = new ArrayList<>();
+    @AuditMetadata(remove = AuditEventType.DISASSOCIATE, add=AuditEventType.ASSOCIATE)
+    private Student student;
 
 }

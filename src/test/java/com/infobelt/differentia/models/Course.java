@@ -6,14 +6,11 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
-@AuditMetadata(name = "Bossing", descriptiveProperty = "name")
+@AuditMetadata(name = "Course", descriptiveProperty = "name")
 @Data
-public class Enrollment {
+public class Course {
 
     @AuditMetadata
     private String name;
-
-    @AuditMetadata(traverse = true, descriptiveProperty = "name")
-    private List<Employee> employees = new ArrayList<>();
 
 }

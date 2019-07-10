@@ -1,5 +1,7 @@
-package com.infobelt.differentia;
+package com.infobelt.differentia.models;
 
+import com.infobelt.differentia.AuditEventType;
+import com.infobelt.differentia.AuditMetadata;
 import lombok.Data;
 
 import java.util.ArrayList;
