@@ -26,7 +26,9 @@ public class StudentEnrollmentCourseTest {
         enrollment.setStudent(student);
 
         List<AuditChange> changes = AUDIT_BUILDER.buildChanges(enrollment, null);
-        assertThat(changes.size(), equalTo(5));
+
+        // We have ignoreSelf so hopefully it is just the assoc/dissoc
+        assertThat(changes.size(), equalTo(2));
         assertThat(changes.get(0).getMessage(), equalTo("Course Coding has been disassociated from student Philip"));
         assertThat(changes.get(1).getMessage(), equalTo("Student Philip has been disassociated from course Coding"));
 

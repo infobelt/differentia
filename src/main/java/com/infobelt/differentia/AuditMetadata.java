@@ -67,6 +67,12 @@ public @interface AuditMetadata {
     boolean ignore() default false;
 
     /**
+     * Allows you to ignore direct changes to this object but still traverse, and
+     * also handle parent and left/right
+     */
+    boolean ignoreSelf() default false;
+
+    /**
      * Define who the parent of a change is - this is useful in an association and disassocition
      * model, this refers to the property that is the parent
      */

@@ -168,7 +168,7 @@ public class AuditBuilder {
             }
         }
 
-        if (om.isTracked()) {
+        if (om.isTracked() && !om.isIgnoreSelf()) {
 
             switch (event) {
                 case ADD:

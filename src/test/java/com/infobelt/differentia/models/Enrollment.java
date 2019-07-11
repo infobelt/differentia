@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.ArrayList;
 import java.util.List;
 
-@AuditMetadata(name = "Enrollment", left = "student", right = "course")
+@AuditMetadata(name = "Enrollment", left = "student", right = "course", ignoreSelf = true)
 @Data
 public class Enrollment {
 

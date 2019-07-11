@@ -14,6 +14,7 @@ import java.util.Map;
 @Slf4j
 @Data
 public class ObjectMetadata {
+    private boolean ignoreSelf = false;
     private List<ObjectMetadata> parentsObjectMetadata = new ArrayList<>();
     private String propertyDescriptiveName;
     private String entityName;
@@ -32,6 +33,8 @@ public class ObjectMetadata {
         this.clazz = object.getClass();
         if (classAnnotation != null && !classAnnotation.ignore()) {
             setTracked(true);
+            this.ignoreSelf = classAnnotation.ignoreSelf();
+
 
             for (Field field : object.getClass().getDeclaredFields()) {
                 FieldMetadata newFieldMetadata = new FieldMetadata(this, field);
@@ -51,6 +54,7 @@ public class ObjectMetadata {
         } else {
             setTracked(false);
         }
+
 
         if (!"".equals(classAnnotation.left()) && !"".equals(classAnnotation.right())) {
             // We have a join table - lets add some logic to track it
