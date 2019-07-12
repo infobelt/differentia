@@ -14,14 +14,13 @@ public class DefaultMessageBuilder implements MessageBuilder {
 
     @Override
     public String buildDeleteMessage(AuditBuilder builder, Object newInstance) {
-        return "Deleted " + builder.getName(newInstance);
+        return "";
     }
 
     @Override
     public String buildNewMessage(AuditBuilder builder, Object newInstance) {
-        return "New " + builder.getName(newInstance);
+        return "";
     }
-
     @Override
     public String buildChangesMessage(AuditBuilder builder, Object newInstance, Object oldInstance, List<AuditChange> changes) {
         return builder.getName(newInstance, true, true) + " has changed";
