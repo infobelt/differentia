@@ -14,9 +14,9 @@ public class NoAnnotationObjectTest {
     @Test
     public void basicNew() {
         NoAnnotationObject obj1 = new NoAnnotationObject();
-        obj1.setName("Cheese");
+        obj1.setName("");
         String message = AUDIT_BUILDER.buildNewMessage(obj1);
-        assertThat(message, equalTo("New NoAnnotationObject"));
+        assertThat(message, equalTo(""));
     }
 
     @Test
@@ -24,15 +24,15 @@ public class NoAnnotationObjectTest {
         NoAnnotationObject obj1 = new NoAnnotationObject();
         obj1.setName("Cheese");
         String message = AUDIT_BUILDER.buildMessage(null, obj1);
-        assertThat(message, equalTo("New NoAnnotationObject"));
+        assertThat(message, equalTo(""));
     }
 
     @Test
     public void basicDelete() {
         NoAnnotationObject obj1 = new NoAnnotationObject();
-        obj1.setName("Cheese");
+        obj1.setName("");
         String message = AUDIT_BUILDER.buildDeleteMessage(obj1);
-        assertThat(message, equalTo("Deleted NoAnnotationObject"));
+        assertThat(message, equalTo(""));
     }
 
     @Test
@@ -40,7 +40,7 @@ public class NoAnnotationObjectTest {
         NoAnnotationObject obj1 = new NoAnnotationObject();
         obj1.setName("Cheese");
         String message = AUDIT_BUILDER.buildMessage(obj1, null);
-        assertThat(message, equalTo("Deleted NoAnnotationObject"));
+        assertThat(message, equalTo(""));
     }
 
     @Test

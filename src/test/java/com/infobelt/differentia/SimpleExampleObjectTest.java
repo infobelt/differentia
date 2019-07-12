@@ -25,7 +25,7 @@ public class SimpleExampleObjectTest {
         SimpleExampleObject obj1 = new SimpleExampleObject();
         obj1.setName("Cheese");
         String message = AUDIT_BUILDER.buildMessage(null, obj1);
-        assertThat(message, equalTo("New example Cheese"));
+        assertThat(message, equalTo(""));
     }
 
     @Test
@@ -41,7 +41,7 @@ public class SimpleExampleObjectTest {
         SimpleExampleObject obj1 = new SimpleExampleObject();
         obj1.setName("Cheese");
         String message = AUDIT_BUILDER.buildMessage(obj1, null);
-        assertThat(message, equalTo("Deleted example Cheese"));
+        assertThat(message, equalTo(""));
     }
 
     @Test
