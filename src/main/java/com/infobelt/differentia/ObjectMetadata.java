@@ -51,15 +51,17 @@ public class ObjectMetadata {
                     addParent(object, parent);
                 }
             }
+
+            if (!"".equals(classAnnotation.left()) && !"".equals(classAnnotation.right())) {
+                // We have a join table - lets add some logic to track it
+                join = true;
+            }
         } else {
             setTracked(false);
         }
 
 
-        if (!"".equals(classAnnotation.left()) && !"".equals(classAnnotation.right())) {
-            // We have a join table - lets add some logic to track it
-            join = true;
-        }
+
     }
 
     public ObjectMetadata getLeft(Object object) {
