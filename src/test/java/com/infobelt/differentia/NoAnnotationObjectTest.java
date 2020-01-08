@@ -71,7 +71,7 @@ public class NoAnnotationObjectTest {
         assertThat(changes.get(0).getDescriptiveName(), equalTo("name"));
         assertThat(changes.get(0).isDescriptive(), equalTo(false));
 
-        assertThat(changes.get(0).getMessage(), equalTo("NoAnnotationObject name changed from Cheese to Toasty"));
+        assertThat(changes.get(0).getMessage(), equalTo("NoAnnotationObject changed"));
     }
 
     @Test
@@ -88,7 +88,7 @@ public class NoAnnotationObjectTest {
         assertThat(changes.get(1).getOldValue(), equalTo(null));
         assertThat(changes.get(1).getDescriptiveName(), equalTo("name"));
         assertThat(changes.get(1).isDescriptive(), equalTo(false));
-        assertThat(changes.get(1).getMessage(), equalTo("New NoAnnotationObject has name of Toasty"));
+        assertThat(changes.get(1).getMessage(), equalTo("New NoAnnotationObject has been added"));
     }
 
     @Test
@@ -104,7 +104,7 @@ public class NoAnnotationObjectTest {
         assertThat(changes.get(1).getDescriptiveName(), equalTo("name"));
         assertThat(changes.get(1).isDescriptive(), equalTo(false));
 
-        assertThat(changes.get(1).getMessage(), equalTo("Removed NoAnnotationObject had name of Cheese"));
+        assertThat(changes.get(1).getMessage(), equalTo("Removed NoAnnotationObject has been deleted"));
 
 
     }

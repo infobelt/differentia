@@ -47,7 +47,7 @@ public class BossEmployeeTest {
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.CHANGE));
         assertThat(changes.get(0).getOldValue(), equalTo("Thing2"));
         assertThat(changes.get(0).getNewValue(), equalTo("Thing3"));
-        assertThat(changes.get(0).getMessage(), equalTo("Employee Thing2 name changed from Thing2 to Thing3"));
+        assertThat(changes.get(0).getMessage(), equalTo("Employee Thing2 changed"));
         assertThat(changes.get(0).getAffectedId(),equalTo("2"));
 
     }
@@ -64,7 +64,7 @@ public class BossEmployeeTest {
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.ADD));
         assertThat(changes.get(0).getProperty(), equalTo("employees"));
         assertThat(changes.get(0).getNewValue(), equalTo("Thing3"));
-        assertThat(changes.get(0).getMessage(), equalTo("New Bossing has employees of Thing3"));
+        assertThat(changes.get(0).getMessage(), equalTo("New Bossing has been added"));
 
     }
 
@@ -80,7 +80,7 @@ public class BossEmployeeTest {
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.REMOVE));
         assertThat(changes.get(0).getProperty(), equalTo("employees"));
         assertThat(changes.get(0).getOldValue(), equalTo("Thing2"));
-        assertThat(changes.get(0).getMessage(), equalTo("Removed Bossing had employees of Thing2"));
+        assertThat(changes.get(0).getMessage(), equalTo("Removed Bossing has been deleted"));
 
     }
 

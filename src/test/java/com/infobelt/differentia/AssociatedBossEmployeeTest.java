@@ -63,7 +63,7 @@ public class AssociatedBossEmployeeTest {
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.ASSOCIATE));
         assertThat(changes.get(0).getProperty(), equalTo("employees"));
         assertThat(changes.get(0).getNewValue(), equalTo("Thing3"));
-        assertThat(changes.get(0).getMessage(), equalTo("Employee Thing3 has been associated with big boss Phil"));
+        assertThat(changes.get(0).getMessage(), equalTo("Employee has been associated with big boss"));
 
     }
 
@@ -91,7 +91,7 @@ public class AssociatedBossEmployeeTest {
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.CHANGE));
         assertThat(changes.get(0).getProperty(), equalTo("name"));
         assertThat(changes.get(0).getOldValue(), equalTo("Thing2"));
-        assertThat(changes.get(0).getMessage(), equalTo("Employee Thing2 name changed from Thing2 to Thing3"));
+        assertThat(changes.get(0).getMessage(), equalTo("Employee Thing2 changed"));
 
     }
 
@@ -106,7 +106,7 @@ public class AssociatedBossEmployeeTest {
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.ASSOCIATE));
         assertThat(changes.get(0).getProperty(), equalTo("employees"));
         assertThat(changes.get(0).getOldValue(), equalTo(""));
-        assertThat(changes.get(0).getMessage(), equalTo("Employee Thing1 has been associated with big boss Billy"));
+        assertThat(changes.get(0).getMessage(), equalTo("Employee has been associated with big boss"));
 
     }
 
