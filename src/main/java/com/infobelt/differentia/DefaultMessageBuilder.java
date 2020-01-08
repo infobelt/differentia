@@ -52,21 +52,21 @@ public class DefaultMessageBuilder implements MessageBuilder {
     private String getTemplate(AuditChange auditChange) {
         switch (auditChange.getEventType()) {
             case ADD:
-                return "New ${entity} has ${descriptiveName_nocaps} of ${newValue}";
+                return "New ${entity} has been added";
             case REMOVE:
-                return "Removed ${entity} had ${descriptiveName_nocaps} of ${oldValue}";
+                return "Removed ${entity} has been deleted";
             case CHANGE:
                 if (auditChange.getNewValue() == null) {
-                    return "${entity_caps} ${entityDescriptiveName} ${descriptiveName_nocaps} was ${oldValue} but is no longer set to a value";
+                    return "${entity_caps} ${entityDescriptiveName} was ${oldValue} but is no longer set to a value";
                 } else if (auditChange.getOldValue() == null) {
-                    return "${entity_caps} ${entityDescriptiveName} ${descriptiveName_nocaps} is now set to ${newValue}";
+                    return "${entity_caps} ${entityDescriptiveName} is now set";
                 } else {
-                    return "${entity_caps} ${entityDescriptiveName} ${descriptiveName_nocaps} changed from ${oldValue} to ${newValue}";
+                    return "${entity_caps} ${entityDescriptiveName} changed";
                 }
             case ASSOCIATE:
-                return "${relatedEntity_caps} ${newValue} has been associated with ${entity_nocaps} ${entityDescriptiveName}";
+                return "${relatedEntity_caps} has been associated with ${entity_nocaps}";
             case DISASSOCIATE:
-                return "${relatedEntity_caps} ${oldValue} has been disassociated from ${entity_nocaps} ${entityDescriptiveName}";
+                return "${relatedEntity_caps} has been disassociated from ${entity_nocaps}";
             default:
                 return "Unknown change type";
         }

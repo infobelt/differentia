@@ -116,7 +116,21 @@ public class ObjectMetadata {
 
         if (classAnnotation != null && !"".equals(classAnnotation.descriptiveProperty())) {
             try {
-                return String.valueOf(PropertyUtils.getProperty(entity, classAnnotation.descriptiveProperty()));
+                if(classAnnotation.descriptiveProperty().contains("|"))
+                {
+                    String[] props = classAnnotation.descriptiveProperty().split("\\|");
+                    String descriptiveProp = "";
+                    for(int i = 0; i<props.length; i++)
+                    {
+                        String tempVal = String.valueOf(PropertyUtils.getProperty(entity, props[i].trim()));
+                        descriptiveProp+= tempVal+" ";
+
+                    }
+                    return descriptiveProp;
+                }
+                else {
+                    return String.valueOf(PropertyUtils.getProperty(entity, classAnnotation.descriptiveProperty()));
+                }
             } catch (Exception e) {
                 log.warn("Unable to get descriptive property " + classAnnotation.descriptiveProperty() + " on object " + entity);
                 throw new RuntimeException("Unable to get descriptive property " + classAnnotation.descriptiveProperty() + " on object " + entity, e);
