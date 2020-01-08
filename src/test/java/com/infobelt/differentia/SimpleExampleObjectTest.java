@@ -72,7 +72,7 @@ public class SimpleExampleObjectTest {
         assertThat(changes.get(0).getDescriptiveName(), equalTo("First name"));
         assertThat(changes.get(0).isDescriptive(), equalTo(true));
 
-        assertThat(changes.get(0).getMessage(), equalTo("Example Cheese first name changed from Cheese to Toasty"));
+        assertThat(changes.get(0).getMessage(), equalTo("Example Cheese changed"));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class SimpleExampleObjectTest {
         assertThat(changes.get(1).getOldValue(), equalTo(null));
         assertThat(changes.get(1).getDescriptiveName(), equalTo("First name"));
         assertThat(changes.get(1).isDescriptive(), equalTo(true));
-        assertThat(changes.get(1).getMessage(), equalTo("New example has first name of Toasty"));
+        assertThat(changes.get(1).getMessage(), equalTo("New example has been added"));
     }
 
     @Test
@@ -105,7 +105,7 @@ public class SimpleExampleObjectTest {
         assertThat(changes.get(1).getDescriptiveName(), equalTo("First name"));
         assertThat(changes.get(1).isDescriptive(), equalTo(true));
 
-        assertThat(changes.get(1).getMessage(), equalTo("Removed example had first name of Cheese"));
+        assertThat(changes.get(1).getMessage(), equalTo("Removed example has been deleted"));
 
 
     }
