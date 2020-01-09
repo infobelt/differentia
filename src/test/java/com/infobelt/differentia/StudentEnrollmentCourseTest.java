@@ -30,7 +30,7 @@ public class StudentEnrollmentCourseTest {
         // We have ignoreSelf so hopefully it is just the assoc/dissoc
         assertThat(changes.size(), equalTo(2));
         assertThat(changes.get(0).getMessage(), equalTo("Course has been disassociated from student"));
-        assertThat(changes.get(1).getMessage(), equalTo("Student Philip has been disassociated from course Coding"));
+        assertThat(changes.get(1).getMessage(), equalTo("Student Philip has been disassociated from course"));
 
 
     }
