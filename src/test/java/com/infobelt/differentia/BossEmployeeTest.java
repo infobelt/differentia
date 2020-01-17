@@ -80,7 +80,7 @@ public class BossEmployeeTest {
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.REMOVE));
         assertThat(changes.get(0).getProperty(), equalTo("employees"));
         assertThat(changes.get(0).getOldValue(), equalTo("Thing2"));
-        assertThat(changes.get(0).getMessage(), equalTo("Removed Bossing has been deleted"));
+        assertThat(changes.get(0).getMessage(), equalTo("Bossing has been deleted"));
 
     }
 

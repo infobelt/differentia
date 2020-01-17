@@ -105,7 +105,7 @@ public class SimpleExampleObjectTest {
         assertThat(changes.get(1).getDescriptiveName(), equalTo("First name"));
         assertThat(changes.get(1).isDescriptive(), equalTo(true));
 
-        assertThat(changes.get(1).getMessage(), equalTo("Removed example has been deleted"));
+        assertThat(changes.get(1).getMessage(), equalTo("example has been deleted"));
 
 
     }

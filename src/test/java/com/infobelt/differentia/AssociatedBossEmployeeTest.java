@@ -102,7 +102,7 @@ public class AssociatedBossEmployeeTest {
         b1.setName("Billy");
         Employee e1 = new Employee(b1, "1", "Thing1");
         List<AuditChange> changes = AUDIT_BUILDER.buildChanges(null, e1);
-        assertThat(changes.size(), equalTo(4));
+        assertThat(changes.size(), equalTo(3));
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.ASSOCIATE));
         assertThat(changes.get(0).getProperty(), equalTo("employees"));
         assertThat(changes.get(0).getOldValue(), equalTo(""));
@@ -117,7 +117,7 @@ public class AssociatedBossEmployeeTest {
         b1.setName("Billy");
         Employee e1 = new Employee(b1, "1", "Thing1");
         List<AuditChange> changes = AUDIT_BUILDER.buildChanges(e1, null);
-        assertThat(changes.size(), equalTo(4));
+        assertThat(changes.size(), equalTo(3));
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.DISASSOCIATE));
         assertThat(changes.get(0).getProperty(), equalTo("employees"));
         assertThat(changes.get(0).getOldValue(), equalTo("Thing1"));
