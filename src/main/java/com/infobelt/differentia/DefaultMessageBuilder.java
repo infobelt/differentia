@@ -54,15 +54,9 @@ public class DefaultMessageBuilder implements MessageBuilder {
             case ADD:
                 return "New ${entity} has been added";
             case REMOVE:
-                return "Removed ${entity} has been deleted";
+                return "${entity} has been deleted";
             case CHANGE:
-                if (auditChange.getNewValue() == null) {
-                    return "${entity_caps} ${entityDescriptiveName} was ${oldValue} but is no longer set to a value";
-                } else if (auditChange.getOldValue() == null) {
-                    return "${entity_caps} ${entityDescriptiveName} is now set";
-                } else {
-                    return "${entity_caps} ${entityDescriptiveName} changed";
-                }
+                return "${entity_caps} ${entityDescriptiveName} changed";
             case ASSOCIATE:
                 return "${relatedEntity_caps} has been associated with ${entity_nocaps}";
             case DISASSOCIATE:

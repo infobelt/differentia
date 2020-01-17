@@ -52,6 +52,8 @@ public class AuditBuilder {
         Object referenceObject = oldInstance != null ? oldInstance : newInstance;
         ObjectMetadata om = new ObjectMetadata(referenceObject);
 
+        AuditMetadata auditMetadata = referenceObject.getClass().getAnnotation(AuditMetadata.class);
+
         // Whats the top level event that is going on
         AuditEventType event = AuditEventType.CHANGE;
         if (oldInstance == null) {
@@ -122,7 +124,7 @@ public class AuditBuilder {
         // Do we have a parent, then we need to make sure we have a change for it
         if (om.hasParent()) {
 
-            for(ObjectMetadata parent : om.getParentsObjectMetadata()) {
+            for (ObjectMetadata parent : om.getParentsObjectMetadata()) {
                 AuditChange auditChange = new AuditChange();
                 auditChange.setEntity(parent.getEntityName());
                 auditChange.setEntityDescriptiveName(parent.getEntityDescriptiveName(om.getParentObject(parent, referenceObject)));
@@ -172,12 +174,12 @@ public class AuditBuilder {
 
             switch (event) {
                 case ADD:
-                    AuditChange newAudit = createAuditChange(event, new FieldMetadata(om,null), referenceObject);
+                    AuditChange newAudit = createAuditChange(event, new FieldMetadata(om, null), referenceObject);
                     newAudit.setMessage(messageBuilder.buildNewMessage(this, referenceObject));
                     changes.add(newAudit);
                     break;
                 case REMOVE:
-                    AuditChange deleteAudit = createAuditChange(event, new FieldMetadata(om,null), referenceObject);
+                    AuditChange deleteAudit = createAuditChange(event, new FieldMetadata(om, null), referenceObject);
                     deleteAudit.setMessage(messageBuilder.buildDeleteMessage(this, referenceObject));
                     changes.add(deleteAudit);
                     break;
@@ -190,14 +192,16 @@ public class AuditBuilder {
                     AuditChange auditChange = createAuditChange(event, fieldMetadata, referenceObject);
                     switch (event) {
                         case ADD:
-                            if (fieldMetadata.isTraversable()) {
-                                changes.addAll(traverse(event, fieldMetadata, newInstance, oldInstance));
-                            } else {
-                                auditChange.setNewValue(getBeanValue(newInstance, fieldMetadata.getFieldName(), fieldMetadata));
-                                auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
+                            if (fieldMetadata.getFieldName().equals(auditMetadata.descriptiveProperty())) {
+                                if (fieldMetadata.isTraversable()) {
+                                    changes.addAll(traverse(event, fieldMetadata, newInstance, oldInstance));
+                                } else {
+                                    auditChange.setNewValue(getBeanValue(newInstance, fieldMetadata.getFieldName(), fieldMetadata));
+                                    auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
 
-                                if (auditChange.getNewValue() != null)
-                                    changes.add(auditChange);
+                                    if (auditChange.getNewValue() != null)
+                                        changes.add(auditChange);
+                                }
                             }
                             break;
                         case CHANGE:
@@ -215,16 +219,16 @@ public class AuditBuilder {
                             }
                             break;
                         case REMOVE:
-                            if (fieldMetadata.isTraversable()) {
-                                changes.addAll(traverse(event, fieldMetadata, newInstance, oldInstance));
-                            } else {
-                                auditChange.setOldValue(getBeanValue(oldInstance, fieldMetadata.getFieldName(), fieldMetadata));
-                                auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
-                                if (auditChange.getOldValue() != null)
-                                    changes.add(auditChange);
+                            if (fieldMetadata.getFieldName().equals(auditMetadata.descriptiveProperty())) {
+                                if (fieldMetadata.isTraversable()) {
+                                    changes.addAll(traverse(event, fieldMetadata, newInstance, oldInstance));
+                                } else {
+                                    auditChange.setOldValue(getBeanValue(oldInstance, fieldMetadata.getFieldName(), fieldMetadata));
+                                    auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
+                                    if (auditChange.getOldValue() != null)
+                                        changes.add(auditChange);
+                                }
                             }
-
-
                             break;
                     }
                 }
