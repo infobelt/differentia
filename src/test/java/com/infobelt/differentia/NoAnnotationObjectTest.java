@@ -83,7 +83,7 @@ public class NoAnnotationObjectTest {
         List<AuditChange> changes = AUDIT_BUILDER.buildChanges(null, obj2);
         assertThat(changes.size(), equalTo(1));
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.ADD));
-        assertThat(changes.get(0).getProperty(), equalTo("name"));
+        assertThat(changes.get(0).getProperty(), equalTo(null));
         assertThat(changes.get(0).getNewValue(), equalTo("Toasty"));
         assertThat(changes.get(0).getOldValue(), equalTo(null));
         assertThat(changes.get(0).getDescriptiveName(), equalTo("name"));
@@ -98,10 +98,10 @@ public class NoAnnotationObjectTest {
         List<AuditChange> changes = AUDIT_BUILDER.buildChanges(obj1, null);
         assertThat(changes.size(), equalTo(1));
         assertThat(changes.get(0).getEventType(), equalTo(AuditEventType.REMOVE));
-        assertThat(changes.get(0).getProperty(), equalTo("name"));
+        assertThat(changes.get(0).getProperty(), equalTo(null));
         assertThat(changes.get(0).getNewValue(), equalTo(null));
-        assertThat(changes.get(0).getOldValue(), equalTo("Cheese"));
-        assertThat(changes.get(0).getDescriptiveName(), equalTo("name"));
+        assertThat(changes.get(0).getOldValue(), equalTo(null));
+        assertThat(changes.get(0).getDescriptiveName(), equalTo(null));
         assertThat(changes.get(0).isDescriptive(), equalTo(false));
 
         assertThat(changes.get(0).getMessage(), equalTo("NoAnnotationObject has been deleted"));
