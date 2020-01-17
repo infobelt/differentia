@@ -7,6 +7,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -192,12 +193,13 @@ public class AuditBuilder {
                     AuditChange auditChange = createAuditChange(event, fieldMetadata, referenceObject);
                     switch (event) {
                         case ADD:
-                            if (fieldMetadata.getFieldName().equals(auditMetadata.descriptiveProperty())) {
+                            if (fieldMetadata.getFieldName().equals(auditMetadata.descriptiveProperty()) ||
+                                    (auditMetadata.descriptiveProperty().contains("|") && auditMetadata.descriptiveProperty().startsWith(fieldMetadata.getFieldName()))) {
                                 if (fieldMetadata.isTraversable()) {
                                     changes.addAll(traverse(event, fieldMetadata, newInstance, oldInstance));
                                 } else {
-                                    auditChange.setNewValue(getBeanValue(newInstance, fieldMetadata.getFieldName(), fieldMetadata));
                                     auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
+                                    auditChange = buildChangeForComplexDescriptiveProperty(event, auditMetadata, auditChange, fieldMetadata, newInstance);
 
                                     if (auditChange.getNewValue() != null)
                                         changes.add(auditChange);
@@ -219,12 +221,14 @@ public class AuditBuilder {
                             }
                             break;
                         case REMOVE:
-                            if (fieldMetadata.getFieldName().equals(auditMetadata.descriptiveProperty())) {
+                            if (fieldMetadata.getFieldName().equals(auditMetadata.descriptiveProperty()) ||
+                                    (auditMetadata.descriptiveProperty().contains("|") && auditMetadata.descriptiveProperty().startsWith(fieldMetadata.getFieldName()))) {
                                 if (fieldMetadata.isTraversable()) {
                                     changes.addAll(traverse(event, fieldMetadata, newInstance, oldInstance));
                                 } else {
-                                    auditChange.setOldValue(getBeanValue(oldInstance, fieldMetadata.getFieldName(), fieldMetadata));
                                     auditChange.setMessage(messageBuilder.buildChangeMessage(this, om, auditChange));
+                                    auditChange = buildChangeForComplexDescriptiveProperty(event, auditMetadata, auditChange, fieldMetadata, oldInstance);
+
                                     if (auditChange.getOldValue() != null)
                                         changes.add(auditChange);
                                 }
@@ -383,6 +387,42 @@ public class AuditBuilder {
 
     public String buildDeleteMessage(Object obj) {
         return messageBuilder.buildDeleteMessage(this, obj);
+    }
+
+    public AuditChange buildChangeForComplexDescriptiveProperty(AuditEventType event, AuditMetadata auditMetadata, AuditChange auditChange, FieldMetadata fieldMetadata, Object instance) {
+        if (auditMetadata.descriptiveProperty().contains("|")) {
+            String[] properties = auditMetadata.descriptiveProperty().split("\\|");
+            StringBuilder descriptiveProp = new StringBuilder();
+            StringBuilder value = new StringBuilder();
+            for (String property: properties) {
+                descriptiveProp.append(property.trim()).append(", ");
+                try {
+                    value.append(PropertyUtils.getProperty(instance, property.trim())).append(", ");
+                } catch (Exception e) {
+                    log.warn("Unable to get property " + property);
+                    throw new RuntimeException("Unable to get the audit value for property " + property, e);
+                }
+            }
+            auditChange.setDescriptiveName(descriptiveProp.toString());
+            switch (event) {
+                case ADD:
+                    auditChange.setNewValue(value.toString());
+                    break;
+                case REMOVE:
+                    auditChange.setOldValue(value.toString());
+                    break;
+            }
+        } else {
+            switch (event) {
+                case ADD:
+                    auditChange.setNewValue(getBeanValue(instance, fieldMetadata.getFieldName(), fieldMetadata));
+                    break;
+                case REMOVE:
+                    auditChange.setOldValue(getBeanValue(instance, fieldMetadata.getFieldName(), fieldMetadata));
+                    break;
+            }
+        }
+        return auditChange;
     }
 }
 

@@ -3,7 +3,6 @@ package com.infobelt.differentia;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -35,7 +34,6 @@ public class ObjectMetadata {
             setTracked(true);
             this.ignoreSelf = classAnnotation.ignoreSelf();
 
-
             for (Field field : object.getClass().getDeclaredFields()) {
                 FieldMetadata newFieldMetadata = new FieldMetadata(this, field);
                 fields.add(newFieldMetadata);
@@ -59,9 +57,6 @@ public class ObjectMetadata {
         } else {
             setTracked(false);
         }
-
-
-
     }
 
     public ObjectMetadata getLeft(Object object) {
@@ -113,22 +108,17 @@ public class ObjectMetadata {
     }
 
     public String getEntityDescriptiveName(Object entity) {
-
         if (classAnnotation != null && !"".equals(classAnnotation.descriptiveProperty())) {
             try {
-                if(classAnnotation.descriptiveProperty().contains("|"))
-                {
+                if (classAnnotation.descriptiveProperty().contains("|")) {
                     String[] props = classAnnotation.descriptiveProperty().split("\\|");
                     String descriptiveProp = "";
-                    for(int i = 0; i<props.length; i++)
-                    {
+                    for (int i = 0; i < props.length; i++) {
                         String tempVal = String.valueOf(PropertyUtils.getProperty(entity, props[i].trim()));
-                        descriptiveProp+= tempVal+" ";
-
+                        descriptiveProp += tempVal + " ";
                     }
                     return descriptiveProp;
-                }
-                else {
+                } else {
                     return String.valueOf(PropertyUtils.getProperty(entity, classAnnotation.descriptiveProperty()));
                 }
             } catch (Exception e) {
