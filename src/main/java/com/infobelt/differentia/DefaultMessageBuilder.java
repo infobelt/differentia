@@ -52,7 +52,11 @@ public class DefaultMessageBuilder implements MessageBuilder {
     private String getTemplate(AuditChange auditChange) {
         switch (auditChange.getEventType()) {
             case ADD:
-                return "New ${entity} has been added";
+                if (auditChange.getEntity().equals("Field") && auditChange.getProperty().equals("fieldLevelInterpretation")) {
+                    return "New ${entity} has ${descriptiveName_nocaps}";
+                } else {
+                    return "New ${entity} has been added";
+                }
             case REMOVE:
                 return "${entity} has been deleted";
             case CHANGE:

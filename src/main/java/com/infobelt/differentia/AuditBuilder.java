@@ -193,7 +193,7 @@ public class AuditBuilder {
                     AuditChange auditChange = createAuditChange(event, fieldMetadata, referenceObject);
                     switch (event) {
                         case ADD:
-                            if (fieldMetadata.getFieldName().equals(auditMetadata.descriptiveProperty()) ||
+                            if (fieldMetadata.getFieldName().equals(auditMetadata.descriptiveProperty()) || fieldMetadata.getPropertyDescriptiveName().contains("Generic") ||
                                     (auditMetadata.descriptiveProperty().contains("|") && auditMetadata.descriptiveProperty().startsWith(fieldMetadata.getFieldName()))) {
                                 if (fieldMetadata.isTraversable()) {
                                     changes.addAll(traverse(event, fieldMetadata, newInstance, oldInstance));
