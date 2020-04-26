@@ -194,7 +194,7 @@ public class AuditBuilder {
                     switch (event) {
                         case ADD:
                             if (fieldMetadata.getFieldName().equals(auditMetadata.descriptiveProperty()) || fieldMetadata.getPropertyDescriptiveName().contains("Generic") ||
-                                    (auditMetadata.descriptiveProperty().contains("|") && auditMetadata.descriptiveProperty().startsWith(fieldMetadata.getFieldName()))) {
+                                    fieldMetadata.getPropertyDescriptiveName().contains("Document Text Interpretation") || (auditMetadata.descriptiveProperty().contains("|") && auditMetadata.descriptiveProperty().startsWith(fieldMetadata.getFieldName()))) {
                                 if (fieldMetadata.isTraversable()) {
                                     changes.addAll(traverse(event, fieldMetadata, newInstance, oldInstance));
                                 } else {
